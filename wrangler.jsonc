@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cell-cascade",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cell-cascade-db",
+      "database_id": "2161c958-2f6c-4def-9617-17ba7f88ec04"
+    }
+  ]
+}

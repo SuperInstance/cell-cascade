@@ -1,0 +1,23 @@
+{
+  "name": "cell-cascade",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Differentiation Cascade — the stem-cell doctrine as running infrastructure. Cloudflare Worker + D1.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "seed": "tsx scripts/seed.ts",
+    "db:create": "wrangler d1 create cell-cascade-db",
+    "db:migrate:local": "wrangler d1 execute cell-cascade-db --file schema.sql --local",
+    "db:migrate:remote": "wrangler d1 execute cell-cascade-db --file schema.sql --remote"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260822.1",
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.12",
+    "typescript": "^5.5.4",
+    "wrangler": "^4.118.0"
+  }
+}

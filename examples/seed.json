@@ -1,0 +1,233 @@
+[
+  {
+    "id": "unheard-duke",
+    "name": "Unheard Duke — GAN rounds totipotent→differentiated",
+    "kind": "gan-rounds",
+    "description": "A totipotent GLM-5.3 model cell differentiated into a Duke-style pianist cell through 3 adversarial GAN rounds (band pass → blind critic → perception audit). The committed sheet is the R3 verdict numbers plus the surviving tendencies: what the critic could no longer wound. Cost drops from full-model to a scoped player cell.",
+    "evidence_ref": "plainsong-mcp ensemble duke-lab-r3/REPORT.md (2026-08-25, critic verdict CONVERGED: Duke?)",
+    "seed": {
+      "organism": "unheard-duke",
+      "cells": [
+        {
+          "id": "glm5.3",
+          "name": "glm-5.3-germ-line",
+          "tier": "totipotent",
+          "role": "germ line — full model + seed, everything still expressible",
+          "sheet": {
+            "model": "GLM-5.3",
+            "substrate": "plainsong ensemble MCP",
+            "dna": "every descendant inherits the full model; the sheet is the silencing pattern"
+          }
+        },
+        {
+          "id": "duke-pianist",
+          "name": "unheard-duke-pianist",
+          "tier": "differentiated",
+          "from": "glm5.3",
+          "role": "Duke-style pianist — swing 66%, an arm that changes weight",
+          "sheet": {
+            "r3_verdict": {
+              "critic": "CONVERGED: Duke?",
+              "session": "duke-lab-r3 — C, 112 bpm, 4/4, swing 66%, 16 bars, @piano",
+              "velocity_std": "0.200 (R2: 0.113 — the arm finally changes weight inside bars)",
+              "dynamic_range": "0.149 (R2: 0.080)",
+              "syncopation": "0.410 (R2: 0.355)",
+              "rhythmic_complexity": "0.272 (R2: 0.210)",
+              "per_bar_velstd": "0.13–0.26 across bars; velocities 37–105 over 116 notes",
+              "swing_evidence": "intra-beat onsets 0.144–0.333 early, 0.66–0.89 laid back; nominal 66% grid observed in render",
+              "steering_dimensions": "R2: 16 channels → 15 dims, dynamics coupled |r|>0.9; R3: 16 dims, 0 dead, 0 coupled — dynamics is TWO dials now"
+            },
+            "surviving_tendencies": [
+              "Vel: rows under every bar — the arm climbs, dips, rises, falls mid-bar; never one weight",
+              "square landings die by displacement: b7 Fm7→Gb7→G7 side-slip (sync 0.69, vel 80→96→88→90), b12 Dm11→Db7 tritone-sub descent",
+              "contours rotate — ramps (1,5), swells (2,9,11), dip-rises (4,12), falls (6,13,16); a mechanical ramp would be a wound",
+              "endings exhale: b16 settles 52→48→40 into the lone C6",
+              "answers live high: register answers above C6, b5 late entry, pickups into downbeats"
+            ]
+          }
+        }
+      ],
+      "myelin": [
+        { "from": "glm5.3", "to": "duke-pianist", "kind": "critique-round", "fire_count": 3, "error_count": 0, "tier_promoted_to": null }
+      ],
+      "distillations": [
+        {
+          "cell": "duke-pianist",
+          "from_tier": "totipotent",
+          "to_tier": "differentiated",
+          "evidence_ref": "duke-lab-r3/REPORT.md",
+          "gardener_verdict": "3 GAN rounds killed all surviving R2 critiques (intra-bar weight, b7/b12 squares, swing) — critic returned CONVERGED: Duke? on its own standards; sheet = R3 numbers + surviving tendencies"
+        }
+      ]
+    }
+  },
+  {
+    "id": "band-clock",
+    "name": "DO Alarm Clock — sclerotic tissue, schedule math over model",
+    "kind": "sclerotic-tissue",
+    "description": "The band clock as fully sclerotic tissue: a self-rescheduling Durable Object alarm that fires bar boundaries with 1ms worst drift and zero model calls. The rule table IS the schedule math — absolute deadlines (startMs + N·barMs), never '+interval'; a catch-up loop drains late ticks in order. Proof that the right tier for timekeeping is tendon, not cortex.",
+    "evidence_ref": "scrap-quilt docs/BAND_SKELETON.md (2026-08-25, VERDICT: PASS — the room holds tempo)",
+    "seed": {
+      "organism": "band-clock",
+      "cells": [
+        {
+          "id": "yard",
+          "name": "yard-germ-line",
+          "tier": "totipotent",
+          "role": "the room — full model + seed, spawns tissue on demand",
+          "sheet": { "dna": "yard-band organism; every cell inherits the room's sheet" }
+        },
+        {
+          "id": "do-alarm",
+          "name": "do-alarm-clock",
+          "tier": "sclerotic",
+          "from": "yard",
+          "role": "band clock — bar boundaries on absolute deadlines, no model",
+          "sheet": {
+            "measurements": {
+              "boundaries_fired": "269/269 across two 5.5-minute production soaks",
+              "worst_drift_ms": 1,
+              "late_gt_100ms": 0,
+              "catch_up_batches": 0,
+              "pass_bar": "late-fire >100ms rate < 1%",
+              "measured": "0.00%"
+            },
+            "rules": [
+              {
+                "when": { "kind": "bar-tick" },
+                "respond": { "action": "freeze bar N+1 (final kind ok|shell|rest), set next alarm at startMs + N*barMs", "bar_ms": 2500, "tempo_bpm": 96, "meter": "4/4", "absolute_never_relative": true, "catch_up": "drain every due tick in order if a fire lands late", "model_call": false, "cost": 0 }
+              },
+              {
+                "when": { "kind": "commit" },
+                "respond": { "action": "write pending bar blob, deadline-checked; tick N freezes bar N+1", "status": "pending -> frozen", "model_call": false, "cost": 0 }
+              }
+            ]
+          },
+          "cost_per_call": 0,
+          "latency_ms": 1,
+          "plasticity": 0.05
+        }
+      ],
+      "myelin": [
+        { "from": "yard", "to": "do-alarm", "kind": "bar-tick", "fire_count": 269, "error_count": 0, "tier_promoted_to": "sclerotic" }
+      ],
+      "distillations": [
+        {
+          "cell": "do-alarm",
+          "from_tier": "differentiated",
+          "to_tier": "sclerotic",
+          "evidence_ref": "BAND_SKELETON.md",
+          "gardener_verdict": "soak-proven: 269/269 boundaries on time, worst drift 1ms, zero catch-up batches — the schedule math never needed the model; promoted to pure rule table"
+        }
+      ]
+    }
+  },
+  {
+    "id": "cue-tokens",
+    "name": "Radio-Cue Acks — myelinated reflexes, nod/ROGER trade/WILCO",
+    "kind": "myelinated-reflex",
+    "description": "The Prefix Law as myelin: every cue targeted at a voice fires an instant ack token from the reflex tier — same frame, sub-tick, model-free. The nod path myelinated clean and sclerosed to a rule table; the trade path carries one error (the founding defect, bar-13/14) so the error-ratio guard correctly holds it differentiated — echo parity gates the WILCO.",
+    "evidence_ref": "scrap-quilt docs/radio-cue-amendment.md (Amendment A001, 2026-08-25)",
+    "seed": {
+      "organism": "cue-tokens",
+      "cells": [
+        {
+          "id": "ensign-zygote",
+          "name": "ensign-germ-line",
+          "tier": "totipotent",
+          "role": "ensign — full model behind the reflexes, wound healing on call",
+          "sheet": { "dna": "F/V EILEEN wheelhouse ensign; venue skin radio, one wire two vocabularies" }
+        },
+        {
+          "id": "cue-ack",
+          "name": "cue-ack-reflex",
+          "tier": "sclerotic",
+          "from": "ensign-zygote",
+          "role": "prefix-law ack table — instant token, no model call",
+          "sheet": {
+            "prefix_law": "every agent→agent and agent→human message = instant prefix token (reflex tier) + async payload — the Wilco buys the model its thinking window",
+            "ack_budget": "same frame as cue fire, <50ms, zero budget cost",
+            "rules": [
+              { "when": { "kind": "nod" }, "respond": { "ack": "ROGER", "gesture_skin": "the nod", "obligation": "none — free" } },
+              { "when": { "kind": "grin" }, "respond": { "ack": "carrier click", "gesture_skin": "grin", "obligation": "none — free" } },
+              { "when": { "kind": "trade" }, "respond": { "ack": "WILCO", "gesture_skin": "your four after mine + stick twirl", "obligation": "gated on echo — repeat-back parity: {kind, at, span, sides[]} normalized and matched; mismatch → SAY AGAIN, deal never enters the ledger" } },
+              { "when": { "kind": "again" }, "respond": { "ack": "SAY AGAIN", "gesture_skin": "hand cupped to ear", "obligation": "none — free; perception requests a re-broadcast, never a guess" } },
+              { "when": { "kind": "cut", "payload_equals": { "priority": "break" } }, "respond": { "ack": "CUT / BREAK-BREAK", "gesture_skin": "stop hand", "obligation": "clear-duty" } },
+              { "when": { "kind": "standby" }, "respond": { "ack": "STANDBY", "obligation": "accepted-deferred — the model is on it; pairs with the shell at the music layer" } }
+            ]
+          },
+          "cost_per_call": 0,
+          "latency_ms": 1,
+          "plasticity": 0.05
+        }
+      ],
+      "myelin": [
+        { "from": "ensign-zygote", "to": "cue-ack", "kind": "nod", "fire_count": 34, "error_count": 0, "tier_promoted_to": "sclerotic" },
+        { "from": "ensign-zygote", "to": "cue-ack", "kind": "trade", "fire_count": 12, "error_count": 1, "tier_promoted_to": null }
+      ],
+      "distillations": [
+        {
+          "cell": "cue-ack",
+          "from_tier": "differentiated",
+          "to_tier": "sclerotic",
+          "evidence_ref": "radio-cue-amendment.md (A001)",
+          "gardener_verdict": "nod path myelinated after 34 clean fires — acks became a table lookup; trade path held differentiated by the error-ratio guard (12 fires, 1 error: the founding defect, session 1 bar-13/14 — Sable's ride-pull never written; echo parity now makes that deal structurally unreachable)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "seamstress-eye",
+    "name": "Seamstress Eye — multipotent critic with the 6-feature gate",
+    "kind": "multipotent-critic",
+    "description": "The eye as a multipotent cell: canon-grounded judgment in positive space ('would this fit the canon I understand?'), generation deliberately NOT its fate. The gate is the frozen 6-feature measurement; Gate 1 passed 5-of-6 monotone with the distance curve shrinking 7.14σ→1.69σ — the take landed INSIDE the canon neighborhood. Judgment (eye) and generation (fingers) are separate organs.",
+    "evidence_ref": "plainsong-mcp stitch/GATE1-REPORT.md (2026-08-25, VERDICT: GATE-PASS)",
+    "seed": {
+      "organism": "seamstress-eye",
+      "cells": [
+        {
+          "id": "seamstress",
+          "name": "seamstress-germ-line",
+          "tier": "totipotent",
+          "role": "germ line — spawns fate decisions, holds the raw canon",
+          "sheet": { "dna": "the Seamstress — general-purpose intelligence incubator; gardener roles are germ layers" }
+        },
+        {
+          "id": "eye",
+          "name": "the-eye",
+          "tier": "multipotent",
+          "from": "seamstress",
+          "role": "canon-grounded critic — fit verdict + nearest neighbor + ONE directional point; blind by construction",
+          "sheet": {
+            "gate": "gate1-features-v1 (versioned, frozen before the live run)",
+            "six_features": ["note_density", "syncopation", "register_spread", "rest_ratio", "harmonic_tension", "interval_size"],
+            "method": "σ-normalized euclidean distance to canon centroid over the six features; nearest canon neighbor by feature distance; ONE directional point = largest normalized gap; normalization by canon pooled per-feature σ",
+            "gate1_result": {
+              "verdict": "GATE-PASS",
+              "monotone_features": "5 of 6 (interval_size wanders — the control-system lesson)",
+              "distance_curve_sigma": [7.141, 5.147, 3.477, 2.791, 2.095, 2.095, 1.966, 1.822, 1.674, 1.686],
+              "final": "1.69σ from centroid — closer than any individual canon excerpt (nearest neighbor ≈1.70σ): the take landed BETWEEN the canon pieces",
+              "canon": "six original 8-bar excerpts, Bill-Evans-ish impressionist comping"
+            },
+            "honesty": "the eye is a function, not a model — nearest neighbor + largest gap — but the seam it speaks across is the same"
+          },
+          "cost_per_call": 0.4,
+          "latency_ms": 800,
+          "plasticity": 0.6
+        }
+      ],
+      "myelin": [
+        { "from": "seamstress", "to": "eye", "kind": "critique", "fire_count": 10, "error_count": 0, "tier_promoted_to": null }
+      ],
+      "distillations": [
+        {
+          "cell": "eye",
+          "from_tier": "totipotent",
+          "to_tier": "multipotent",
+          "evidence_ref": "GATE1-REPORT.md",
+          "gardener_verdict": "judgment is a separate organ from generation — the eye holds canon scope and stays multipotent (critic tissue, not performer tissue); Gate 1 proved the loop and the measurement move a naive player into the canon neighborhood in ten stitches"
+        }
+      ]
+    }
+  }
+]
