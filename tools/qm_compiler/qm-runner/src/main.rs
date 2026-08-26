@@ -215,8 +215,10 @@ fn main() {
                     Box::new(|thing| { thing.value = Some(Box::new(json!({ "miss": true }))); }),
                     Box::new(|thing| { thing.value = Some(Box::new(Value::Null)); }));
                 vm.tick(1.0);
+                // cell-cascade's table miss reports response: null (ok=0 signal);
+                // the {miss:true} stays inside the VM for views/debugging only
                 served.push(json!({ "to": s.to, "kind": s.kind, "mode": mode,
-                    "response": get_bound(&vm, &target).cloned().unwrap_or(Value::Null) }));
+                    "response": Value::Null }));
             }
             let _ = mode;
         }

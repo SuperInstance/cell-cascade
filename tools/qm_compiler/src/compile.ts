@@ -222,8 +222,8 @@ export interface RefResult {
 /** Serve one signal against a compiled program using the reference
  *  semantics: route by kind, first matching guard wins, subset match by
  *  canonical JSON, miss = scar tissue. */
-export function refServe(program: QmProgram, sig: { from: string; kind: string; payload: Record<string, unknown> }): RefResult | null {
-  const to = program.routes[sig.kind];
+export function refServe(program: QmProgram, sig: { from: string; to?: string; kind: string; payload: Record<string, unknown> }): RefResult | null {
+  const to = sig.to ?? program.routes[sig.kind];
   if (!to) return null;
   const effects = program.ops.filter(
     (o) => o.op === 'effect' && o.target === responseName(to),
