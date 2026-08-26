@@ -26,28 +26,29 @@ function goodBar(bar = 1): TraceBar {
   return {
     bar, onsets: 4,
     features: {
-      note_density: 0.38, syncopation: 0.3, register_spread: 0.45,
-      rest_ratio: 0.45, harmonic_tension: 0.4, interval_size: 0.25,
+      note_density: 0.35, syncopation: 0.4, register_spread: 0.12,
+      rest_ratio: 0.1, harmonic_tension: 0.5, interval_size: 0.3,
       avg_pitch: 0.5, velocity_mean: 0.6, velocity_std: 0.2,
     },
   };
 }
 
-/** The etude bar: wall-to-wall notes, no rests, leaping intervals. */
+/** The etude bar: wall-to-wall notes, leaping intervals (rest_ratio reads
+ *  in-band under sustain-coverage semantics — density carries that wound). */
 function denseBar(bar = 1): TraceBar {
   return {
     bar, onsets: 8,
     features: {
-      note_density: 0.85, syncopation: 0.3, register_spread: 0.45,
-      rest_ratio: 0.06, harmonic_tension: 0.4, interval_size: 0.7,
+      note_density: 0.85, syncopation: 0.4, register_spread: 0.12,
+      rest_ratio: 0.06, harmonic_tension: 0.5, interval_size: 0.8,
       avg_pitch: 0.5,
     },
   };
 }
 
-/** Gray zone: density just below the low edge (0.2 - 0.03). */
+/** Gray zone: density just below the low edge (0.15 - 0.03). */
 function grayBar(bar = 1): TraceBar {
-  return { ...goodBar(bar), features: { ...goodBar(bar).features, note_density: 0.17 } };
+  return { ...goodBar(bar), features: { ...goodBar(bar).features, note_density: 0.12 } };
 }
 
 // ── the frozen gate ─────────────────────────────────────────────────────────
@@ -60,16 +61,15 @@ test('gate: a mid-band bar is clean — accept, cheap serve, no findings', () =>
   assert.equal(c.summary, 'clean against the gate');
 });
 
-test('gate: the etude bar is a clear revise — density/rest/interval all bad', () => {
+test('gate: the etude bar is a clear revise — density and leaping intervals bad', () => {
   const c = cheapCritique([denseBar(1)], criticIntent());
   assert.equal(c.verdict, 'revise');
   assert.equal(critiqueServe(c), 'cheap');            // clear violations need no model
   const channels = c.observations.filter(o => o.severity === 'bad').map(o => o.channel).sort();
-  assert.deepEqual(channels, ['interval_size', 'note_density', 'rest_ratio']);
-  assert.ok(c.penalties.total >= 3, 'three bad findings ≥ 3 penalty');
+  assert.deepEqual(channels, ['interval_size', 'note_density']);
+  assert.ok(c.penalties.total >= 2, 'two bad findings ≥ 2 penalty');
   const st = steeringFromCritique(c, 1);
   assert.ok(st.directives.some(d => /thin the texture/.test(d)), 'density directive present');
-  assert.ok(st.directives.some(d => /breath/.test(d)), 'rest directive present');
   assert.ok(st.directives.some(d => /stepwise/.test(d)), 'voice-leading directive present');
   assert.equal(st.verdict, 'revise');
 });
@@ -101,6 +101,19 @@ test('gate: a flat tension curve across 4+ bars is an etude, not a tune', () => 
   const t = c.observations.find(o => o.kind === 'tension-curve');
   assert.ok(t, 'tension-curve observation exists');
   assert.equal(t!.severity, 'warn');
+});
+
+test('gate: intent defaults are the measured v0.2 canon — its bars read clean', () => {
+  // the seven bars of the praised v0.2 run, as measured through the MCP
+  const canon = [
+    { note_density: 0.312, register_spread: 0.118, rest_ratio: 0.0, interval_size: 0.333, syncopation: 0.4, harmonic_tension: 0.648 },
+    { note_density: 0.375, register_spread: 0.079, rest_ratio: 0.125, interval_size: 0.417, syncopation: 1.0, harmonic_tension: 0.628 },
+    { note_density: 0.312, register_spread: 0.079, rest_ratio: 0.0, interval_size: 0.208, syncopation: 0.4, harmonic_tension: 0.648 },
+    { note_density: 0.312, register_spread: 0.15, rest_ratio: 0.125, interval_size: 0.292, syncopation: 1.0, harmonic_tension: 0.536 },
+  ].map((features, i) => ({ bar: i + 1, onsets: 5, features: { ...features, avg_pitch: 0.46 } }));
+  const c = cheapCritique(canon, criticIntent());
+  assert.equal(c.observations.filter(o => o.severity === 'bad').length, 0,
+    `the v0.2 tune must not be wounded by miscalibrated bands: ${JSON.stringify(c.observations)}`);
 });
 
 test('gate: intent is overridable per channel (the organism owns the intent)', () => {

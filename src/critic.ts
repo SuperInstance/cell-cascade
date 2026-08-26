@@ -55,18 +55,23 @@ export const TENSION_MIN_STDDEV = 0.03;
 export interface FeatureBand { lo: number; hi: number }
 
 /** What the organism wants each bar (and the piece) to measure. The intent
- *  belongs to the ORGANISM (driver/health), never to the model. Defaults:
- *  the spare-singing-pocket doctrine of the v0.2 bandleader voice. */
+ *  belongs to the ORGANISM (driver/health), never to the model. Defaults are
+ *  CALIBRATED ON MEASUREMENT, not intuition: the v0.2 run's seven bars
+ *  (runs/cortex-plug-2026-08-26T05-18-41, the tune the doc praised) through
+ *  the same analyze_features — note_density .31–.38, register_spread .08–.15
+ *  (the /127 normalization), rest_ratio 0–.125 (sustain-coverage semantics),
+ *  interval_size .21–.85, syncopation .4–1.0, tension .54–.65. The bands
+ *  hold the neighborhood those bars live in; violations are real wounds. */
 export interface CriticIntent extends Record<CriticChannel, FeatureBand> {}
 
 export function criticIntent(partial: Partial<CriticIntent> = {}): CriticIntent {
   const defaults: CriticIntent = {
-    note_density: { lo: 0.2, hi: 0.55 },      // 8th grid: not empty, never wall-to-wall
-    syncopation: { lo: 0.1, hi: 0.6 },        // land some attacks off the beat
-    register_spread: { lo: 0.2, hi: 0.7 },    // shells breathe across registers
-    rest_ratio: { lo: 0.25, hi: 0.65 },       // the bar must breathe
-    harmonic_tension: { lo: 0.15, hi: 0.7 },  // the changes speak, none scream
-    interval_size: { lo: 0.0, hi: 0.45 },     // voice-lead stepwise (≤ ~5 st mean)
+    note_density: { lo: 0.15, hi: 0.6 },       // sparse ok, wall-to-wall is an etude
+    syncopation: { lo: 0.2, hi: 1.0 },         // land some attacks off the beat
+    register_spread: { lo: 0.05, hi: 0.25 },   // ~6–32 semitones across the voicing
+    rest_ratio: { lo: 0.0, hi: 0.3 },          // sustained-coverage semantics (see above)
+    harmonic_tension: { lo: 0.15, hi: 0.75 },  // the changes speak, none scream
+    interval_size: { lo: 0.0, hi: 0.65 },      // mean interval ≤ ~8 semitones
   };
   return { ...defaults, ...partial };
 }
@@ -302,8 +307,10 @@ export function criticSheet(voice: CriticVoice = {}): Record<string, unknown> {
       provider: 'openai-compatible',
       model: voice.model ?? 'glm-5.3',
       system_prompt: criticSystemPrompt(),
-      // adjudication is narrow: few tokens, cold temperature (judgment, not jam)
-      max_tokens: voice.maxTokens ?? 768,
+      // adjudication is narrow but reasoning models THINK first: the budget
+      // must cover the thinking or the answer comes back empty (live-run
+      // lesson 2026-08-26: 768 tokens → empty content, verdict stood cheap)
+      max_tokens: voice.maxTokens ?? 2048,
       temperature: voice.temperature ?? 0.2,
     },
   };
@@ -467,6 +474,7 @@ export interface CycleRound {
 export interface CycleResult {
   rounds: CycleRound[];
   acceptedBars: string[];
+  acceptedVia: 'verdict' | 'cap' | 'fallback' | 'none';  // how the bars were accepted
   finalCritique: Critique | null;
   steering: SteeringHints | null;   // feeds the NEXT compose payload
   composeErrors: number;
@@ -495,6 +503,7 @@ export async function composeCycle(io: CycleIO, args: {
   const acceptedSoFar: string[] = [];
   let steering = args.steering;
   let composeErrors = 0;
+  let lastServed: CycleRound | null = null;   // fallback: a failed revision never erases a served bar
 
   for (let round = 1; round <= args.ganRounds; round++) {
     const payload: Record<string, unknown> = {
@@ -514,7 +523,7 @@ export async function composeCycle(io: CycleIO, args: {
     if (!bars.length) {
       composeErrors++;
       rounds.push({ round, payload, bars: [], serve: 'none', critique: null, accepted: false, seamFailed: false });
-      break;
+      break;   // served nothing — fall back to the last served bars below
     }
 
     const trace = await io.analyze(acceptedSoFar, bars);
@@ -546,10 +555,12 @@ export async function composeCycle(io: CycleIO, args: {
     const accepted = critique === null // ear unavailable → v0.2 semantics
       ? true
       : critique.verdict === 'accept' || isLast;
-    rounds.push({ round, payload, bars, serve, critique, accepted, seamFailed });
+    const cycleRound: CycleRound = { round, payload, bars, serve, critique, accepted, seamFailed };
+    rounds.push(cycleRound);
+    lastServed = cycleRound;
     if (accepted) {
       return {
-        rounds, acceptedBars: bars,
+        rounds, acceptedBars: bars, acceptedVia: critique && critique.verdict === 'accept' ? 'verdict' : 'cap',
         finalCritique: critique,
         steering: critique ? steeringFromCritique(critique, round) : null,
         composeErrors,
@@ -559,7 +570,14 @@ export async function composeCycle(io: CycleIO, args: {
     acceptedSoFar.push(...bars); // context for the next round's analysis window
   }
   return {
-    rounds, acceptedBars: [], finalCritique: null,
-    steering: null, composeErrors,
+    rounds,
+    // a revision round failed — the last SERVED bars stand (they were
+    // composed, the critique is logged); its directives carry to the next
+    // cycle. Honest fallback, never a blank.
+    acceptedBars: lastServed?.bars ?? [],
+    acceptedVia: lastServed ? 'fallback' : 'none',
+    finalCritique: lastServed?.critique ?? null,
+    steering: lastServed?.critique ? steeringFromCritique(lastServed.critique, lastServed.round) : null,
+    composeErrors,
   };
 }

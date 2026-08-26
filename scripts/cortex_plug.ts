@@ -38,6 +38,10 @@ const TEMPO = Number(env.TEMPO ?? 100);
 const BARS_PER = Math.max(1, Number(env.BARS_PER ?? 1));
 const STYLE = env.STYLE ?? '';
 const MODEL = env.MODEL ?? 'glm-5.3';
+// steered re-compositions make reasoning models think HARDER: the first live
+// v0.3 run burned 2048 tokens thinking and answered empty. The budget rises
+// with the loop — the seam timeout (MODEL_TIMEOUT_MS) is the real ceiling.
+const MAX_TOKENS = Math.max(1024, Number(env.MAX_TOKENS ?? 6144));
 const CRITIC_MODEL = env.CRITIC_MODEL ?? MODEL;
 // v0.3: GAN rounds per compose cycle (1 = compose blind, v0.2 semantics;
 // 2 = compose → critique → recompose-if-wounded; the default). Round 2 only
@@ -114,7 +118,7 @@ async function main(): Promise<void> {
   });
   const band = await api<{ child: { id: string } }>('/cell', {
     organism: ORG, name: 'bandleader', from_cell: zygote, role: 'the cortex — composes on the downbeat',
-    tier: 'totipotent', sheet_patch: bandleaderSheet({ model: MODEL, style: STYLE }),
+    tier: 'totipotent', sheet_patch: bandleaderSheet({ model: MODEL, style: STYLE, maxTokens: MAX_TOKENS }),
   });
   const critic = await api<{ child: { id: string } }>('/cell', {
     organism: ORG, name: 'critic', from_cell: zygote, role: 'the ear — judges the bars the bandleader wrote',
@@ -130,6 +134,7 @@ async function main(): Promise<void> {
   // v0.3 counters: the critic's serve-split and the GAN ledger
   let cheapServes = 0, seamServes = 0, seamFailures = 0, critiques = 0;
   let revisions = 0, earlyAccepts = 0, analyzeFailures = 0;
+  const acceptedVia: Record<string, number> = {};
   let carriedSteering: SteeringHints | null = null;
   for (let tick = 1; tick <= TICKS; tick++) {
     const tp = tickPayload(tick, EVERY);
@@ -205,8 +210,9 @@ async function main(): Promise<void> {
       const final = servedRounds[servedRounds.length - 1];
       barLines.push(...final.bars);
       if (servedRounds.length > 1) revisions++; else earlyAccepts++;
+      acceptedVia[cycle.acceptedVia] = (acceptedVia[cycle.acceptedVia] ?? 0) + 1;
       carriedSteering = cycle.steering;   // the critique feeds the NEXT compose payload
-      log(`├─ tick ${String(tick).padStart(2)} · downbeat → compose ${String(barIndex).padStart(2)} (${String(CHANGES[barIndex % CHANGES.length]).padEnd(5)}) · ${servedRounds.length} round(s) · critic: ${final.critique?.verdict ?? 'unheard'}${final.seamFailed ? ' (seam answer unusable — the cheap verdict stood)' : ''}`);
+      log(`├─ tick ${String(tick).padStart(2)} · downbeat → compose ${String(barIndex).padStart(2)} (${String(CHANGES[barIndex % CHANGES.length]).padEnd(5)}) · ${servedRounds.length} round(s) · critic: ${final.critique?.verdict ?? 'unheard'} · accepted: ${cycle.acceptedVia}${final.seamFailed ? ' (seam answer unusable — the cheap verdict stood)' : ''}`);
       for (const r of servedRounds) {
         log(`│   r${r.round}${r.critique ? ` [${r.critique.verdict}${r.serve !== 'none' ? ` · ${r.serve}` : ''}]${r.accepted ? ' ✓' : ''}` : ' [ear unavailable]'}`);
         log(`│   ${r.bars.join('\n│   ')}`);
@@ -256,6 +262,7 @@ async function main(): Promise<void> {
     compile: compiled.text.split('\n')[0],
     gan: {
       rounds_configured: GAN_ROUNDS,
+      accepted_via: acceptedVia,
       critique_serve: {
         critiques, cheap: cheapServes, seam: seamServes, seam_failures: seamFailures,
         cheap_pct: critiques ? Math.round((cheapServes / critiques) * 1000) / 10 : null,
