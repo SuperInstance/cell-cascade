@@ -1,0 +1,39 @@
+{
+  "organism": "cortex-plug-051841",
+  "run": "runs/cortex-plug-2026-08-26T05-18-41-774Z",
+  "ticks": 32,
+  "every": 4,
+  "bars_written": 7,
+  "composes_served": 7,
+  "compose_errors": 1,
+  "tokens": 10683,
+  "model_ms": 125952,
+  "table_ms": 32,
+  "changes": [
+    "Dm7",
+    "G7",
+    "Cmaj7",
+    "A7b9",
+    "Fmaj7",
+    "Bbmaj7",
+    "E7b9",
+    "A7"
+  ],
+  "model": "glm-5.3",
+  "compile": "cortex-plug-051841 — what the organism wrote  --  C, 100 bpm, 4/4",
+  "health": {
+    "serve_split": null,
+    "cost_tumor": {
+      "threshold_pct": 5,
+      "totipotent_serve_pct": 17.5,
+      "window": 40,
+      "warning": true,
+      "note": "COST TUMOR: the germ line served 17.5% of the last 40 signals (> 5%) — the organism is leaning on its stem cells; differentiate dedicated tissue or grow rule tables from distillation candidates"
+    }
+  },
+  "wiring": {
+    "spine": "clock →(tick)→ c_406b3691 [sclerotic · rule table · cost 0]",
+    "cortex": "c_406b3691 →(compose)→ c_cf368d4b [totipotent · model seam · glm-5.3]",
+    "hands": "driver accumulates bars → plainsong MCP compile_score → MIDI"
+  }
+}

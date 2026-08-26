@@ -1,0 +1,40 @@
+{"tick":1,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":1}
+{"tick":1,"compose":0,"changes":"Dm7","mode":"model","ok":true,"tokens":821,"latency_ms":6074,"answer_head":"@piano | d3-a3-c4 . . f4 . e4 . . | vel: 72"}
+{"tick":2,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":2}
+{"tick":3,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":3}
+{"tick":4,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":4}
+{"tick":5,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":5}
+{"tick":5,"compose":1,"changes":"G7","mode":"model-error","ok":false,"tokens":null,"latency_ms":2000,"answer_head":""}
+{"tick":6,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":6}
+{"tick":7,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":7}
+{"tick":8,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":8}
+{"tick":9,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":9}
+{"tick":9,"compose":1,"changes":"G7","mode":"model","ok":true,"tokens":1569,"latency_ms":21694,"answer_head":"@piano | . d4 . g3-b3-f4 . b3 . a3 | vel: 70"}
+{"tick":10,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":10}
+{"tick":11,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":11}
+{"tick":12,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":12}
+{"tick":13,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":13}
+{"tick":13,"compose":2,"changes":"Cmaj7","mode":"model","ok":true,"tokens":1471,"latency_ms":16387,"answer_head":"@piano | e3-g3-b3 . . . . c4 . d4 | vel: 68"}
+{"tick":14,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":14}
+{"tick":15,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":15}
+{"tick":16,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":16}
+{"tick":17,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":17}
+{"tick":17,"compose":3,"changes":"A7b9","mode":"model","ok":true,"tokens":1854,"latency_ms":22036,"answer_head":"@piano | d4 . . c#4 . a2 . g3-bb3 | vel: 69"}
+{"tick":18,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":18}
+{"tick":19,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":19}
+{"tick":20,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":20}
+{"tick":21,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":21}
+{"tick":21,"compose":4,"changes":"Fmaj7","mode":"model","ok":true,"tokens":1788,"latency_ms":23398,"answer_head":"@piano | . e4 . c4 . a3 . f3-a3 | vel: 66"}
+{"tick":22,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":22}
+{"tick":23,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":23}
+{"tick":24,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":24}
+{"tick":25,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":25}
+{"tick":25,"compose":5,"changes":"Bbmaj7","mode":"model","ok":true,"tokens":1834,"latency_ms":23092,"answer_head":"@piano | bb2 . d4 . . f4 . d3-a3 | vel: 70"}
+{"tick":26,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":26}
+{"tick":27,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":27}
+{"tick":28,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":28}
+{"tick":29,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":29}
+{"tick":29,"compose":6,"changes":"E7b9","mode":"model","ok":true,"tokens":1346,"latency_ms":13271,"answer_head":"@piano | . e3 . g#3-d4 . f4 . e4 | vel: 70"}
+{"tick":30,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":30}
+{"tick":31,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":31}
+{"tick":32,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":32}
