@@ -1,0 +1,47 @@
+[
+  {
+    "from": "seamstress",
+    "to": "eye",
+    "kind": "gate-check",
+    "payload": {
+      "features": [
+        0.5,
+        0.4,
+        0.6,
+        0.3,
+        0.5,
+        0.45
+      ]
+    }
+  },
+  {
+    "from": "seamstress",
+    "to": "eye",
+    "kind": "gate-check",
+    "payload": {
+      "features": [
+        0.5,
+        0.4,
+        0.6,
+        0.3,
+        0.5,
+        6.45
+      ]
+    }
+  },
+  {
+    "from": "seamstress",
+    "to": "eye",
+    "kind": "gate-check",
+    "payload": {
+      "features": [
+        1.5,
+        1.4,
+        1.6,
+        1.3,
+        1.5,
+        1.45
+      ]
+    }
+  }
+]
