@@ -1,0 +1,122 @@
+{
+  "organism": "cortex-plug-0732",
+  "run": "runs/cortex-plug-2026-08-26T15-46-17-061Z",
+  "ticks": 16,
+  "every": 4,
+  "bars_written": 3,
+  "composes_served": 3,
+  "compose_errors": 1,
+  "tokens": 11762,
+  "model_ms": 122651,
+  "table_ms": 16,
+  "changes": [
+    "Dm7",
+    "G7",
+    "Cmaj7",
+    "A7b9",
+    "Fmaj7",
+    "Bbmaj7",
+    "E7b9",
+    "A7"
+  ],
+  "model": "glm-5.3",
+  "compile": "cortex-plug-0732 — what the organism wrote  --  C, 100 bpm, 4/4",
+  "gan": {
+    "rounds_configured": 2,
+    "critique_serve": {
+      "critiques": 4,
+      "cheap": 3,
+      "seam": 1,
+      "seam_failures": 0,
+      "cheap_pct": 75,
+      "seam_pct": 25
+    },
+    "revision_rounds": 1,
+    "early_accepts": 2,
+    "analyze_failures": 0,
+    "intent": {
+      "note_density": {
+        "lo": 0.2,
+        "hi": 0.55
+      },
+      "syncopation": {
+        "lo": 0.1,
+        "hi": 0.6
+      },
+      "register_spread": {
+        "lo": 0.2,
+        "hi": 0.7
+      },
+      "rest_ratio": {
+        "lo": 0.25,
+        "hi": 0.65
+      },
+      "harmonic_tension": {
+        "lo": 0.15,
+        "hi": 0.7
+      },
+      "interval_size": {
+        "lo": 0,
+        "hi": 0.45
+      }
+    }
+  },
+  "health": {
+    "serve_modes_pct": {
+      "model": 22.2,
+      "table": 70.4,
+      "escalated": 0,
+      "model_required": 0,
+      "error": 7.4
+    },
+    "zero_cost_serve_pct": 59.3,
+    "cost_tumor": {
+      "threshold_pct": 5,
+      "totipotent_serve_pct": 18.5,
+      "window": 27,
+      "warning": true,
+      "note": "COST TUMOR: the germ line served 18.5% of the last 27 signals (> 5%) — the organism is leaning on its stem cells; differentiate dedicated tissue or grow rule tables from distillation candidates"
+    },
+    "serve_split": {
+      "window": 27,
+      "by_kind": {
+        "tick": {
+          "signals": 16,
+          "table": 16,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        },
+        "critique": {
+          "signals": 4,
+          "table": 3,
+          "model": 1,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 75,
+          "model_pct": 25
+        },
+        "compose": {
+          "signals": 7,
+          "table": 0,
+          "model": 5,
+          "escalated": 0,
+          "error": 2,
+          "table_pct": 0,
+          "model_pct": 71.4
+        }
+      },
+      "worst_offender": "compose",
+      "note": "serve split by kind: tick 100% table / 0% seam · critique 75% table / 25% seam · compose 0% table / 71.4% seam — compose leans hardest on the seam (71.4%)"
+    }
+  },
+  "wiring": {
+    "spine": "clock →(tick)→ c_a0609438 [sclerotic · rule table · cost 0]",
+    "cortex": "c_a0609438 →(compose)→ c_34f870f5 [totipotent · model seam · glm-5.3]",
+    "ear": "c_34f870f5 →(critique)→ c_27096862 [multipotent · frozen gate cost 0 · seam glm-5.3 only on ambiguity]",
+    "loop": "compose → analyze_features → critique → steering → next compose payload (2 round cap)",
+    "hands": "driver accumulates bars → plainsong MCP compile_score → MIDI"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "organism": "cortex-plug-v03-dense",
+  "zygote": "c_87a5350c",
+  "metronome": "c_f42fc753",
+  "bandleader": "c_1407f9fe",
+  "critic": "c_81417b05",
+  "every": 4,
+  "changes": [
+    "Dm7",
+    "G7",
+    "Cmaj7",
+    "A7b9",
+    "Fmaj7",
+    "Bbmaj7",
+    "E7b9",
+    "A7"
+  ],
+  "model": "glm-5.3",
+  "critic_model": "glm-5.3",
+  "gan_rounds": 2
+}
