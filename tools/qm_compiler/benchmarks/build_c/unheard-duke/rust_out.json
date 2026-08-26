@@ -1,0 +1,104 @@
+{
+  "organism": "unheard-duke",
+  "results": [
+    {
+      "kind": "tendency-query",
+      "mode": "table-miss",
+      "response": null,
+      "to": "duke-pianist"
+    }
+  ],
+  "time": 1.0,
+  "views": {
+    "duke-pianist/facts": {
+      "cost_per_call": null,
+      "latency_ms": null,
+      "name": "unheard-duke-pianist",
+      "plasticity": null,
+      "role": "Duke-style pianist — swing 66%, an arm that changes weight",
+      "rule_count": 0,
+      "sheet_residue": {
+        "r3_verdict": {
+          "critic": "CONVERGED: Duke?",
+          "dynamic_range": "0.149 (R2: 0.080)",
+          "per_bar_velstd": "0.13–0.26 across bars; velocities 37–105 over 116 notes",
+          "rhythmic_complexity": "0.272 (R2: 0.210)",
+          "session": "duke-lab-r3 — C, 112 bpm, 4/4, swing 66%, 16 bars, @piano",
+          "steering_dimensions": "R2: 16 channels → 15 dims, dynamics coupled |r|>0.9; R3: 16 dims, 0 dead, 0 coupled — dynamics is TWO dials now",
+          "swing_evidence": "intra-beat onsets 0.144–0.333 early, 0.66–0.89 laid back; nominal 66% grid observed in render",
+          "syncopation": "0.410 (R2: 0.355)",
+          "velocity_std": "0.200 (R2: 0.113 — the arm finally changes weight inside bars)"
+        },
+        "surviving_tendencies": [
+          "Vel: rows under every bar — the arm climbs, dips, rises, falls mid-bar; never one weight",
+          "square landings die by displacement: b7 Fm7→Gb7→G7 side-slip (sync 0.69, vel 80→96→88→90), b12 Dm11→Db7 tritone-sub descent",
+          "contours rotate — ramps (1,5), swells (2,9,11), dip-rises (4,12), falls (6,13,16); a mechanical ramp would be a wound",
+          "endings exhale: b16 settles 52→48→40 into the lone C6",
+          "answers live high: register answers above C6, b5 late entry, pickups into downbeats"
+        ]
+      },
+      "tier": "differentiated"
+    },
+    "duke-pianist/health": {
+      "cost_per_call": null,
+      "latency_ms": null,
+      "name": "unheard-duke-pianist",
+      "plasticity": null,
+      "role": "Duke-style pianist — swing 66%, an arm that changes weight",
+      "rule_count": 0,
+      "sheet_residue": {
+        "r3_verdict": {
+          "critic": "CONVERGED: Duke?",
+          "dynamic_range": "0.149 (R2: 0.080)",
+          "per_bar_velstd": "0.13–0.26 across bars; velocities 37–105 over 116 notes",
+          "rhythmic_complexity": "0.272 (R2: 0.210)",
+          "session": "duke-lab-r3 — C, 112 bpm, 4/4, swing 66%, 16 bars, @piano",
+          "steering_dimensions": "R2: 16 channels → 15 dims, dynamics coupled |r|>0.9; R3: 16 dims, 0 dead, 0 coupled — dynamics is TWO dials now",
+          "swing_evidence": "intra-beat onsets 0.144–0.333 early, 0.66–0.89 laid back; nominal 66% grid observed in render",
+          "syncopation": "0.410 (R2: 0.355)",
+          "velocity_std": "0.200 (R2: 0.113 — the arm finally changes weight inside bars)"
+        },
+        "surviving_tendencies": [
+          "Vel: rows under every bar — the arm climbs, dips, rises, falls mid-bar; never one weight",
+          "square landings die by displacement: b7 Fm7→Gb7→G7 side-slip (sync 0.69, vel 80→96→88→90), b12 Dm11→Db7 tritone-sub descent",
+          "contours rotate — ramps (1,5), swells (2,9,11), dip-rises (4,12), falls (6,13,16); a mechanical ramp would be a wound",
+          "endings exhale: b16 settles 52→48→40 into the lone C6",
+          "answers live high: register answers above C6, b5 late entry, pickups into downbeats"
+        ]
+      },
+      "tier": "differentiated"
+    },
+    "duke-pianist/response": {
+      "miss": true
+    },
+    "glm5.3/facts": {
+      "cost_per_call": null,
+      "latency_ms": null,
+      "name": "glm-5.3-germ-line",
+      "plasticity": null,
+      "role": "germ line — full model + seed, everything still expressible",
+      "rule_count": 0,
+      "sheet_residue": {
+        "dna": "every descendant inherits the full model; the sheet is the silencing pattern",
+        "model": "GLM-5.3",
+        "substrate": "plainsong ensemble MCP"
+      },
+      "tier": "totipotent"
+    },
+    "glm5.3/health": {
+      "cost_per_call": null,
+      "latency_ms": null,
+      "name": "glm-5.3-germ-line",
+      "plasticity": null,
+      "role": "germ line — full model + seed, everything still expressible",
+      "rule_count": 0,
+      "sheet_residue": {
+        "dna": "every descendant inherits the full model; the sheet is the silencing pattern",
+        "model": "GLM-5.3",
+        "substrate": "plainsong ensemble MCP"
+      },
+      "tier": "totipotent"
+    },
+    "glm5.3/response": null
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "host": "AMD Ryzen AI 9 HX 370 (24 logical), WSL2 6.18.33.2-microsoft-standard, gcc -O2 -std=c99 / node v22.23.2 / wasm-pack 0.15.0 (nodejs target, wasm-opt)",
+  "date": "2026-08-25",
+  "protocol": {
+    "cold": "first serve in-process",
+    "warm": "mean of serves 2-1000",
+    "steady": "10,000 serves; p50/p99 of per-serve ns",
+    "runs": "C:5 binary runs, WASM:3 node runs, cloud:30 reqs/mode"
+  },
+  "c_lane": {
+    "band-clock": {
+      "load_ns": 31109,
+      "canonical_signal": "do-alarm/bar-tick",
+      "serves_on": "quilt-vm-c (gcc -O2)",
+      "cold_ns": 1132,
+      "warm_mean_ns": 235,
+      "steady_mean_ns": 224,
+      "steady_min_ns": 90,
+      "steady_p50_ns": 111,
+      "steady_p99_ns": 1843
+    },
+    "cue-tokens": {
+      "load_ns": 25388,
+      "canonical_signal": "cue-ack/nod",
+      "serves_on": "quilt-vm-c (gcc -O2)",
+      "cold_ns": 2796,
+      "warm_mean_ns": 308,
+      "steady_mean_ns": 214,
+      "steady_min_ns": 100,
+      "steady_p50_ns": 110,
+      "steady_p99_ns": 1803
+    },
+    "seamstress-eye": {
+      "load_ns": 27161,
+      "canonical_signal": "eye/gate-check",
+      "serves_on": "quilt-vm-c (gcc -O2)",
+      "cold_ns": 19547,
+      "warm_mean_ns": 923,
+      "steady_mean_ns": 1234,
+      "steady_min_ns": 641,
+      "steady_p50_ns": 821,
+      "steady_p99_ns": 3747
+    },
+    "unheard-duke": {
+      "load_ns": 43372,
+      "canonical_signal": "duke-pianist/tendency-query",
+      "serves_on": "quilt-vm-c (gcc -O2)",
+      "cold_ns": 772,
+      "warm_mean_ns": 299,
+      "steady_mean_ns": 249,
+      "steady_min_ns": 80,
+      "steady_p50_ns": 140,
+      "steady_p99_ns": 2014
+    }
+  },
+  "wasm_lane": {
+    "band-clock": {
+      "serves_on": "quilt-vm-wasm (wasm-pack nodejs) in node v22",
+      "cold_ns": 723971,
+      "warm_mean_ns": 11353,
+      "steady_mean_ns": 8812,
+      "steady_min_ns": 5441,
+      "steady_p50_ns": 5871,
+      "steady_p99_ns": 40817
+    },
+    "cue-tokens": {
+      "serves_on": "quilt-vm-wasm (wasm-pack nodejs) in node v22",
+      "cold_ns": 1113298,
+      "warm_mean_ns": 9071,
+      "steady_mean_ns": 5541,
+      "steady_min_ns": 3187,
+      "steady_p50_ns": 3567,
+      "steady_p99_ns": 31821
+    },
+    "seamstress-eye": {
+      "serves_on": "quilt-vm-wasm (wasm-pack nodejs) in node v22",
+      "cold_ns": 683675,
+      "warm_mean_ns": 10592,
+      "steady_mean_ns": 4313,
+      "steady_min_ns": 2555,
+      "steady_p50_ns": 2695,
+      "steady_p99_ns": 22052
+    },
+    "unheard-duke": {
+      "serves_on": "quilt-vm-wasm (wasm-pack nodejs) in node v22",
+      "cold_ns": 185151,
+      "warm_mean_ns": 14895,
+      "steady_mean_ns": 5118,
+      "steady_min_ns": 1843,
+      "steady_p50_ns": 2795,
+      "steady_p99_ns": 20338
+    }
+  },
+  "cloud_floor": {
+    "url": "https://cell-cascade.casey-digennaro.workers.dev/signal",
+    "reflex": "environment -> cue-tokens:cue-ack kind=nod -> ROGER (mode=table)",
+    "new_conn_ms": {
+      "mean": 335.99,
+      "p50": 309.9,
+      "min": 265.59,
+      "max": 961.2,
+      "n": 30
+    },
+    "keep_alive_ms": {
+      "mean": 224.47,
+      "p50": 197.09,
+      "min": 170.85,
+      "max": 561.96,
+      "n": 30
+    },
+    "server_reported_ms": {
+      "mean": 1.0,
+      "note": "Worker-side latency_ms, includes D1 round trips (the rule table lives in D1, not the isolate)"
+    }
+  },
+  "headline": {
+    "reflex": "cue-tokens ROGER (nod)",
+    "edge_c_p50_ns": 110,
+    "edge_wasm_p50_ns": 3567,
+    "cloud_server_side_ns": 1000000,
+    "cloud_keepalive_p50_ns": 197090000,
+    "cloud_newconn_p50_ns": 309900000,
+    "ratio_c_vs_server_side": 9091,
+    "ratio_c_vs_keepalive_p50": 1791727,
+    "ratio_c_vs_newconn_p50": 2817273,
+    "ratio_wasm_vs_server_side": 280,
+    "ratio_wasm_vs_keepalive_p50": 55254
+  }
+}

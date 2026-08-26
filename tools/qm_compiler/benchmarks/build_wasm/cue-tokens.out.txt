@@ -1,0 +1,18 @@
+results [
+  {"to": "cue-ack", "kind": "nod", "mode": "table", "response": {"ack":"ROGER","gesture_skin":"the nod","obligation":"none — free"}},
+  {"to": "cue-ack", "kind": "grin", "mode": "table", "response": {"ack":"carrier click","gesture_skin":"grin","obligation":"none — free"}},
+  {"to": "cue-ack", "kind": "trade", "mode": "table", "response": {"ack":"WILCO","gesture_skin":"your four after mine + stick twirl","obligation":"gated on echo — repeat-back parity: {kind, at, span, sides[]} normalized and matched; mismatch → SAY AGAIN, deal never enters the ledger"}},
+  {"to": "cue-ack", "kind": "again", "mode": "table", "response": {"ack":"SAY AGAIN","gesture_skin":"hand cupped to ear","obligation":"none — free; perception requests a re-broadcast, never a guess"}},
+  {"to": "cue-ack", "kind": "cut", "mode": "table", "response": {"ack":"CUT / BREAK-BREAK","gesture_skin":"stop hand","obligation":"clear-duty"}},
+  {"to": "cue-ack", "kind": "cut", "mode": "table-miss", "response": null},
+  {"to": "cue-ack", "kind": "standby", "mode": "table", "response": {"ack":"STANDBY","obligation":"accepted-deferred — the model is on it; pairs with the shell at the music layer"}}
+]
+views {
+  "ensign-zygote/facts": {"name":"ensign-germ-line","role":"ensign — full model behind the reflexes, wound healing on call","rule_count":0,"sheet_residue":{"dna":"F/V EILEEN wheelhouse ensign; venue skin radio, one wire two vocabularies"},"tier":"totipotent"},
+  "ensign-zygote/response": null,
+  "ensign-zygote/health": {"name":"ensign-germ-line","role":"ensign — full model behind the reflexes, wound healing on call","rule_count":0,"sheet_residue":{"dna":"F/V EILEEN wheelhouse ensign; venue skin radio, one wire two vocabularies"},"tier":"totipotent"},
+  "cue-ack/facts": {"cost_per_call":0,"latency_ms":1,"name":"cue-ack-reflex","plasticity":0.05,"role":"prefix-law ack table — instant token, no model call","rule_count":6,"sheet_residue":{"ack_budget":"same frame as cue fire, <50ms, zero budget cost","prefix_law":"every agent→agent and agent→human message = instant prefix token (reflex tier) + async payload — the Wilco buys the model its thinking window"},"tier":"sclerotic"},
+  "cue-ack/response": {"ack":"STANDBY","obligation":"accepted-deferred — the model is on it; pairs with the shell at the music layer"},
+  "cue-ack/health": {"cost_per_call":0,"latency_ms":1,"name":"cue-ack-reflex","plasticity":0.05,"role":"prefix-law ack table — instant token, no model call","rule_count":6,"sheet_residue":{"ack_budget":"same frame as cue fire, <50ms, zero budget cost","prefix_law":"every agent→agent and agent→human message = instant prefix token (reflex tier) + async payload — the Wilco buys the model its thinking window"},"tier":"sclerotic"}
+}
+timing {"organism": "cue-tokens", "canonical_signal": "cue-ack/nod", "load_ns": 3629653, "cold_ns": 1002523, "warm_mean_ns": 7600, "steady_mean_ns": 6188, "steady_min_ns": 3156, "steady_p50_ns": 3517, "steady_p99_ns": 45496, "steady_max_ns": 772650}
