@@ -2,6 +2,12 @@
 
 **The Differentiation Cascade — the stem-cell doctrine as running infrastructure.**
 
+<p align="center">
+  <img src="assets/images/hero.jpg" width="700" alt="One amber-lit cell dividing under a brass instrument while rows of quiet vials sleep in the dark — the whole organism's potential, held in a single glowing act">
+</p>
+
+*Every cell carries the full genome; the desk light chooses what gets expressed.*
+
 > "It could work on Cloudflare with workers in the background, and example
 > decompositions could be saved from experiments that went well." — Casey
 
@@ -42,6 +48,14 @@ organisms.
   a distillation event records the promotion.
 - **A rule-table miss is scar tissue**: logged as an error signal; the answer
   is wound healing, not silent guessing.
+
+```mermaid
+flowchart LR
+    T[totipotent<br/>full model · cost 1.0] -->|prune| M[multipotent<br/>scoped · 0.4]
+    M -->|prune| D[differentiated<br/>committed · 0.15]
+    D -->|"myelination<br/>(≥25 clean fires)"| S[sclerotic<br/>rule table · ~0]
+    S -."miss = scar tissue<br/>wound healing".-> T
+```
 
 ## Endpoints
 
