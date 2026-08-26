@@ -167,3 +167,16 @@ test('JOURNEY: the compose payload carries the outline; the critique consumes it
     Math.abs(0.5 - lib.tension_targets[1]) > TENSION_TARGET_TOL ? 1 : 0);
   assert.equal(seen.length, 1);
 });
+
+test('hardening: the controller refuses NaN; zero-bar ghost sections never exist', () => {
+  // NaN in realized → no-op, targets survive intact
+  const targets = [0.5, 0.6, 0.7];
+  const bad = nudgeTargets(targets, [0.5, NaN]);
+  assert.deepEqual(bad.targets, targets);
+  assert.equal(bad.nudge, 0);
+  // a form with more letters than bars carves no ghost sections
+  const lib = planLibretto({ bars: 2, form: 'ABAC' });
+  assert.ok(lib.sections.every(s => s.bars >= 1));
+  assert.equal(lib.sections.reduce((a, s) => a + s.bars, 0), 2);
+  assert.ok(lib.sections.every(s => s.tension_target >= 0.15 && s.tension_target <= 0.75));
+});

@@ -154,6 +154,10 @@ export interface MintPattern {
   /** true → the proposal needs a musical judgment (kimi) before it moves
    *  a STANDING band it did not directly test. */
   needsJudgment: boolean;
+  /** true → the pattern CONFIRMS the standing canon (no band moves); set
+   *  when override-derived evidence corrects to an envelope the standing
+   *  gate already covers. Recorded with evidence, applied as no-op. */
+  confirm?: boolean;
   conflict?: string;                   // set when recorded-but-not-proposed
 }
 
@@ -166,7 +170,10 @@ export const MAX_EDGE_MOVE = 0.15;
 export const MIN_BAND_WIDTH = 0.05;
 
 function groupKey(p: MintEvidencePoint): string {
-  return `${p.channel}|${p.side}`;
+  // group by channel + side + THE BAND THE READING WAS JUDGED AGAINST —
+  // evidence against an operator override never pools with evidence
+  // against the standing gate (different experiments, different mints).
+  return `${p.channel}|${p.side}|${r3(p.target_lo)}|${r3(p.target_hi)}`;
 }
 
 /** Find repeated verdict patterns in the evidence. Returns proposals AND
@@ -192,15 +199,21 @@ export function findMintPatterns(
     const seamBad = pts.filter(p => p.judged === 'seam' && p.severity === 'bad');
     const seamWarn = pts.filter(p => p.judged === 'seam' && p.severity === 'warn');
     const gateBad = pts.filter(p => p.judged === 'gate' && p.severity === 'bad');
+    // BLESSINGS: the seam blessed the reading outright (ok), or warned while
+    // the organism STOOD the bar anyway (warn + verdict accept + accepted) —
+    // a reading the piece kept is de facto sanctioned. DAMNINGS: seam bad.
+    // A warn the cycle revised is neither — it leans, it does not rule.
+    const blessed = seamOk.concat(seamWarn.filter(p => p.verdict === 'accept' && p.accepted === true));
+    const damned = seamBad;
 
     // conflicts: the seam blessed AND damned the same edge → no tendency
-    if (seamOk.length >= 1 && seamBad.length >= 1) {
+    if (blessed.length >= 1 && damned.length >= 1) {
       skipped.push({
         kind: 'loosen', channel, side,
         counts: { ok: seamOk.length, bad: seamBad.length, gate_bad: gateBad.length },
         evidence: pts.slice(0, EVIDENCE_CAP), evidence_total: pts.length,
         adjustment: { channel, side, from: 0, to: 0 },
-        rationale: `mixed seam verdicts on the ${side} edge of ${channel} (${seamOk.length} ok / ${seamBad.length} bad) — ambiguity is real here, the seam keeps it`,
+        rationale: `mixed seam verdicts on the ${side} edge of ${channel} (${blessed.length} blessed / ${damned.length} damned) — ambiguity is real here, the seam keeps it`,
         needsJudgment: false, conflict: 'mixed verdicts',
       });
       continue;
@@ -210,28 +223,45 @@ export function findMintPatterns(
     const standingBand = standing[channel];
 
     // ── LOOSEN: the seam keeps blessing readings the gate calls gray ──
-    if (seamOk.length >= minRepeats) {
-      const values = seamOk.map(p => p.value);
+    // (blessed readings must have been GRAY — clear violations never reach
+    // the seam; a clear-blessing in the ledger is a driver bug, not a mint)
+    const blessedGray = blessed.every(p =>
+      side === 'low'
+        ? p.value >= p.target_lo - AMBIGUITY_BAND && p.value < p.target_lo
+        : p.value <= p.target_hi + AMBIGUITY_BAND && p.value > p.target_hi);
+    if (blessed.length >= minRepeats && damned.length === 0 && blessedGray) {
+      const values = blessed.map(p => p.value);
       const extreme = side === 'low' ? Math.min(...values) : Math.max(...values);
       const raw = side === 'low' ? extreme - AMBIGUITY_BAND : extreme + AMBIGUITY_BAND;
       const oldEdge = side === 'low' ? evidenceBand.lo : evidenceBand.hi;
       const move = side === 'low' ? Math.max(raw, oldEdge - MAX_EDGE_MOVE) : Math.min(raw, oldEdge + MAX_EDGE_MOVE);
       const to = r3(Math.max(0, Math.min(1, move)));
       const sane = side === 'low' ? to < evidenceBand.hi - MIN_BAND_WIDTH : to > evidenceBand.lo + MIN_BAND_WIDTH;
+      if (!sane) continue;
       const targetsStanding = Math.abs((side === 'low' ? standingBand.lo : standingBand.hi) - oldEdge) < 1e-9;
+      // adoption direction: an override-derived correction enters the
+      // standing gate only if it moves the standing edge OUTWARD (loosen:
+      // beyond it). If the standing gate already sanctions a wider envelope
+      // than the corrected override, the pattern CONFIRMS the canon — it
+      // never shrinks the standing band on override evidence alone.
+      const standingEdge = side === 'low' ? standingBand.lo : standingBand.hi;
+      const outward = side === 'low' ? to < standingEdge - 1e-9 : to > standingEdge + 1e-9;
+      const confirmNoop = !targetsStanding && !outward;
       patterns.push({
         kind: 'loosen', channel, side,
         counts: { ok: seamOk.length, bad: seamBad.length, gate_bad: gateBad.length },
-        evidence: seamOk.slice(0, EVIDENCE_CAP), evidence_total: seamOk.length,
+        evidence: blessed.slice(0, EVIDENCE_CAP), evidence_total: blessed.length,
         adjustment: { channel, side, from: r3(oldEdge), to },
-        rationale: `the seam blessed ${seamOk.length} reading(s) at ${channel}'s ${side} edge (extreme ${r3(extreme)}) — readings the gate called gray. ` +
-          `Move the ${side} edge to ${to} so they sit inside the band: future identical readings judge clean at cost 0. ` +
-          (targetsStanding
-            ? 'The evidence tested the standing band directly.'
-            : `The evidence tested an operator intent override ([${evidenceBand.lo}, ${evidenceBand.hi}]) — adopting into the standing band needs musical judgment.`),
-        needsJudgment: !targetsStanding,
+        rationale: `the seam blessed ${blessed.length} gray reading(s) at ${channel}'s ${side} edge (extreme ${r3(extreme)})${seamOk.length < blessed.length ? ' — warned, but the organism stood the bars' : ''}. ` +
+          (confirmNoop
+            ? `The tested band was an operator override ([${evidenceBand.lo}, ${evidenceBand.hi}]) whose corrected ${side} edge (${to}) sits inside the standing gate ([${standingBand.lo}, ${standingBand.hi}]) — the canon already sanctions a wider envelope. CONFIRM: no change.`
+            : `Move the ${side} edge to ${to} so they sit inside the band: future identical readings judge clean at cost 0. ` +
+              (targetsStanding
+                ? 'The evidence tested the standing band directly.'
+                : `The evidence tested an operator intent override ([${evidenceBand.lo}, ${evidenceBand.hi}]) — adopting into the standing band needs musical judgment.`)),
+        needsJudgment: !targetsStanding && !confirmNoop,
+        confirm: confirmNoop || undefined,
       });
-      if (!sane) skipped.push(patterns.pop()!);
       continue;
     }
 
@@ -252,16 +282,25 @@ export function findMintPatterns(
         const to = r3(Math.max(0, Math.min(1, move)));
         const sane = side === 'low' ? to < evidenceBand.hi - MIN_BAND_WIDTH : to > evidenceBand.lo + MIN_BAND_WIDTH;
         const targetsStanding = Math.abs((side === 'low' ? standingBand.lo : standingBand.hi) - oldEdge) < 1e-9;
+        // adoption direction: tighten enters the standing gate only if it
+        // moves the standing edge in the tighten direction (low: raises the
+        // floor); otherwise the standing gate is already tighter — confirm.
+        const standingEdge = side === 'low' ? standingBand.lo : standingBand.hi;
+        const outward = side === 'low' ? to > standingEdge + 1e-9 : to < standingEdge - 1e-9;
+        const confirmNoop = !targetsStanding && !outward;
         const p: MintPattern = {
           kind: 'tighten', channel, side,
           counts: { ok: seamOk.length, bad: seamBad.length, gate_bad: gateBad.length },
           evidence: seamBad.slice(0, EVIDENCE_CAP), evidence_total: seamBad.length,
           adjustment: { channel, side, from: r3(oldEdge), to },
           rationale: `the seam damned ${seamBad.length} gray reading(s) at ${channel}'s ${side} edge (extreme ${r3(extreme)}) — the gate kept missing what the ear kept catching. ` +
-            `Move the ${side} edge to ${to} so the gate alone flags them: clear violations, cost 0, no seam.`,
-          needsJudgment: !targetsStanding,
+            (confirmNoop
+              ? `The tested band was an operator override; the standing gate's ${side} edge (${standingEdge}) already sits at/past the corrected edge (${to}) — CONFIRM: no change.`
+              : `Move the ${side} edge to ${to} so the gate alone flags them: clear violations, cost 0, no seam.`),
+          needsJudgment: !targetsStanding && !confirmNoop,
+          confirm: confirmNoop || undefined,
         };
-        if (sane) patterns.push(p);
+        patterns.push(p);
         continue;
       }
     }
@@ -278,14 +317,21 @@ export function findMintPatterns(
       const to = r3(Math.max(0, Math.min(1, move)));
       const sane = side === 'low' ? to < evidenceBand.hi - MIN_BAND_WIDTH : to > evidenceBand.lo + MIN_BAND_WIDTH;
       if (sane) {
+        const targetsStanding = Math.abs((side === 'low' ? standingBand.lo : standingBand.hi) - oldEdge) < 1e-9;
+        const standingEdge = side === 'low' ? standingBand.lo : standingBand.hi;
+        const outward = side === 'low' ? to < standingEdge - 1e-9 : to > standingEdge + 1e-9;
+        const confirmNoop = !targetsStanding && !outward;
         patterns.push({
           kind: 'recalibrate', channel, side,
           counts: { ok: seamOk.length, bad: seamBad.length, gate_bad: gateBad.length },
           evidence: keptBads.slice(0, EVIDENCE_CAP), evidence_total: keptBads.length,
           adjustment: { channel, side, from: r3(oldEdge), to },
           rationale: `${keptBads.length} clear ${channel} violation(s) on the ${side} side sat in bars the organism ACCEPTED (median ${median}) — the intent fought the music and the music won. ` +
-            `Recalibrate the ${side} edge to ${to}: bands calibrated on measurement, not wishful intent (the v0.3 doctrine). This is a musical judgment — the judger must sign it.`,
+            (confirmNoop
+              ? `The tested band was an operator override; the standing gate already covers the measured envelope — CONFIRM: no change.`
+              : `Recalibrate the ${side} edge to ${to}: bands calibrated on measurement, not wishful intent (the v0.3 doctrine). This is a musical judgment — the judger must sign it.`),
           needsJudgment: true,
+          confirm: confirmNoop || undefined,
         });
       }
     }
@@ -309,7 +355,7 @@ export interface MintRecord {
   evidence_lines: number;
   evidence_points: number;
   min_repeats: number;
-  applied: Array<BandAdjustment & { kind: MintPattern['kind']; rationale: string; evidence: Array<{ run: string; line: number; tick: number; channel: string; value: number; severity: string }> }>;
+  applied: Array<BandAdjustment & { kind: MintPattern['kind']; tested_edge?: number; rationale: string; evidence: Array<{ run: string; line: number; tick: number; channel: string; value: number; severity: string }> }>;
   rejected: Array<{ channel: string; side: string; kind: string; reason: string; judgment?: string }>;
   skipped: Array<{ channel: string; side: string; rationale: string }>;
   restored_from?: number;           // rollback: the version whose snapshot stands again
@@ -334,11 +380,15 @@ export function loadGateBands(path: string): GateBandsFile | null {
   try {
     const raw = JSON.parse(readFileSync(path, 'utf8')) as GateBandsFile;
     if (typeof raw.version !== 'number' || typeof raw.bands !== 'object' || raw.bands === null || !Array.isArray(raw.history)) return null;
-    // validate every channel band shape
+    // validate every channel band shape; an inverted band is invalid —
+    // that channel falls back to the calibrated default (never garbage)
     const bands = criticIntent();
     for (const ch of CRITIC_FEATURES) {
       const b = (raw.bands as Record<string, unknown>)[ch] as { lo?: unknown; hi?: unknown } | undefined;
-      if (b && typeof b.lo === 'number' && typeof b.hi === 'number') bands[ch] = { lo: b.lo, hi: b.hi };
+      if (b && typeof b.lo === 'number' && typeof b.hi === 'number'
+        && Number.isFinite(b.lo) && Number.isFinite(b.hi) && b.lo < b.hi) {
+        bands[ch] = { lo: b.lo, hi: b.hi };
+      }
     }
     return { version: raw.version, bands, history: raw.history };
   } catch {
@@ -372,15 +422,47 @@ export function applyMint(args: {
   const bands: CriticIntent = { ...file.bands };
   const applied: MintRecord['applied'] = [];
   const rejected: MintRecord['rejected'] = [];
+  const mintedChannels = new Set<string>();
 
+  // The application point ENFORCES the doctrine — a caller's pattern array
+  // is never trusted: every mint cites evidence, creeps (never leaps),
+  // keeps the band sane, and one channel moves at most once per pass.
   const apply = (p: MintPattern): void => {
+    if (p.confirm) {
+      rejected.push({ channel: p.channel, side: p.side, kind: `${p.kind}·confirm`, reason: p.rationale.match(/CONFIRM: no change/) ? p.rationale : `confirm — ${p.rationale}` });
+      return;
+    }
+    if (!p.evidence.length) {
+      rejected.push({ channel: p.channel, side: p.side, kind: p.kind, reason: 'no evidence cited — a mint without evidence is not a mint' });
+      return;
+    }
+    if (mintedChannels.has(p.channel)) {
+      rejected.push({ channel: p.channel, side: p.side, kind: p.kind, reason: 'channel already minted this pass — one edge per channel per mint' });
+      return;
+    }
     const band = bands[p.channel];
-    bands[p.channel] = p.side === 'low'
-      ? { lo: p.adjustment.to, hi: band.hi }
-      : { lo: band.lo, hi: p.adjustment.to };
+    const standingEdge = p.side === 'low' ? band.lo : band.hi;
+    const to = p.adjustment.to;
+    if (!Number.isFinite(to)) {
+      rejected.push({ channel: p.channel, side: p.side, kind: p.kind, reason: 'non-finite edge — refused' });
+      return;
+    }
+    const move = Math.abs(to - standingEdge);
+    if (move > MAX_EDGE_MOVE + 1e-9) {
+      rejected.push({ channel: p.channel, side: p.side, kind: p.kind, reason: `would move the standing ${p.side} edge ${r3(standingEdge)} → ${to} (Δ${r3(move)}) — mints creep (≤${MAX_EDGE_MOVE}), they never leap` });
+      return;
+    }
+    const next = p.side === 'low' ? { lo: to, hi: band.hi } : { lo: band.lo, hi: to };
+    if (next.lo >= next.hi - MIN_BAND_WIDTH) {
+      rejected.push({ channel: p.channel, side: p.side, kind: p.kind, reason: `band would invert/thin: [${r3(next.lo)}, ${r3(next.hi)}] — refused` });
+      return;
+    }
+    mintedChannels.add(p.channel);
+    bands[p.channel] = next;
     applied.push({
       kind: p.kind, channel: p.channel, side: p.side,
-      from: p.adjustment.from, to: p.adjustment.to,
+      from: r3(standingEdge), to,
+      tested_edge: p.adjustment.from,
       rationale: p.rationale,
       evidence: p.evidence.map(e => ({ run: e.run, line: e.line, tick: e.tick, channel: e.channel, value: r3(e.value), severity: e.severity })),
     });
@@ -463,7 +545,7 @@ export function renderMintRecord(r: MintRecord): string {
   }
   for (const a of r.applied) {
     lines.push('');
-    lines.push(`- **${a.kind.toUpperCase()} ${a.channel} ${a.side} edge: ${a.from} → ${a.to}**`);
+    lines.push(`- **${a.kind.toUpperCase()} ${a.channel} ${a.side} edge: ${a.from} → ${a.to}${a.tested_edge !== undefined && a.tested_edge !== a.from ? ` (tested against override edge ${a.tested_edge})` : ''}**`);
     lines.push(`  - ${a.rationale}`);
     lines.push(`  - evidence (${a.evidence.length} cited):`);
     for (const e of a.evidence) {

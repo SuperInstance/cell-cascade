@@ -86,7 +86,7 @@ test('scanLedgers: cites run dirs + line numbers, skips garbage lines', () => {
 test('pattern: repeated seam-ok on one edge → LOOSEN covers the blessed readings', () => {
   const standing = criticIntent();
   const target = { lo: standing.note_density.lo, hi: standing.note_density.hi };
-  const pts = [0.06, 0.08, 0.1].map((v, i) => seamOk('note_density', v, target, { tick: i + 1, line: i + 1 }));
+  const pts = [0.1, 0.11, 0.12].map((v, i) => seamOk('note_density', v, target, { tick: i + 1, line: i + 1 }));
   const { patterns, skipped } = findMintPatterns(pts, standing, 3);
   assert.equal(skipped.length, 0);
   assert.equal(patterns.length, 1);
@@ -94,27 +94,54 @@ test('pattern: repeated seam-ok on one edge → LOOSEN covers the blessed readin
   assert.equal(p.kind, 'loosen');
   assert.equal(p.channel, 'note_density');
   assert.equal(p.side, 'low');
-  // new lo = min(values) - gray margin = 0.06 - 0.06 = 0
-  assert.equal(p.adjustment.to, 0);
+  // new lo = min(values) - gray margin = 0.1 - 0.06 = 0.04
+  assert.equal(p.adjustment.to, 0.04);
   assert.equal(p.needsJudgment, false, 'evidence tested the standing band — seam sanction suffices');
   assert.ok(p.rationale.includes('cost 0'));
 });
 
 test('pattern: repeated seam-ok under an operator override → needs musical judgment', () => {
   const standing = criticIntent();                        // standing lo 0.15
-  const override = { lo: 0.32, hi: 0.6 };                 // the run's env INTENT
+  const override = { lo: 0.05, hi: 0.6 };                 // the run's env INTENT, looser
+  const pts = [0.02, 0.03, 0.04].map((v, i) => seamOk('note_density', v, override, { tick: i + 1 }));
+  const { patterns } = findMintPatterns(pts, standing, 3);
+  assert.equal(patterns.length, 1);
+  assert.equal(patterns[0].needsJudgment, true, 'adopting an override correction into the standing band needs a judgment');
+  assert.equal(patterns[0].adjustment.to, 0, 'corrected edge = 0.02 - 0.06, clamped');
+});
+
+test('pattern: an override that corrects INSIDE the standing envelope → CONFIRM, no move', () => {
+  const standing = criticIntent();                        // standing note_density [0.15, 0.6]
+  const override = { lo: 0.32, hi: 0.6 };                 // operator tightened; seam kept blessing .28-.30
   const pts = [0.28, 0.3, 0.29].map((v, i) => seamOk('note_density', v, override, { tick: i + 1 }));
   const { patterns } = findMintPatterns(pts, standing, 3);
   assert.equal(patterns.length, 1);
-  assert.equal(patterns[0].needsJudgment, true, 'evidence tested an override, not the standing band');
+  assert.ok(patterns[0].confirm, 'corrected edge ≈.22 sits above standing lo .15 — the canon already covers more');
+  assert.equal(patterns[0].needsJudgment, false);
+});
+
+test('pattern: evidence pools only within the band it was judged against (provenance grouping)', () => {
+  const standing = criticIntent();
+  const t = { lo: standing.note_density.lo, hi: standing.note_density.hi };
+  const override = { lo: 0.32, hi: 0.6 };
+  // ok under the standing band + bad under the override — DIFFERENT experiments
+  const pts = [
+    seamOk('note_density', 0.1, t), seamOk('note_density', 0.11, t),
+    seamBad('note_density', 0.28, override), seamBad('note_density', 0.29, override), seamBad('note_density', 0.3, override),
+  ];
+  const { patterns, skipped } = findMintPatterns(pts, standing, 2);
+  assert.equal(skipped.length, 0, 'no pooled conflict across bands');
+  const kinds = patterns.map(p => `${p.kind}@${p.adjustment.from}`).sort();
+  assert.ok(kinds.includes('loosen@0.15'), 'the standing-band evidence loosens');
+  assert.ok(kinds.some(k => k.startsWith('tighten@0.32')), 'the override evidence proposes separately');
 });
 
 test('pattern: mixed seam verdicts on one edge are a conflict — recorded, never minted', () => {
   const standing = criticIntent();
   const t = { lo: standing.note_density.lo, hi: standing.note_density.hi };
   const pts = [
-    seamOk('note_density', 0.1, t), seamOk('note_density', 0.11, t),
-    seamBad('note_density', 0.09, t), seamBad('note_density', 0.12, t),
+    seamOk('note_density', 0.11, t), seamOk('note_density', 0.13, t),
+    seamBad('note_density', 0.1, t), seamBad('note_density', 0.12, t),
   ];
   const { patterns, skipped } = findMintPatterns(pts, standing, 2);
   assert.equal(patterns.length, 0);
@@ -163,7 +190,7 @@ test('pattern: unresolved grays judge nothing', () => {
 test('applyMint: version increments, snapshot carries the moved edge, evidence cited', async () => {
   const file = defaultGateBands();
   const t = { lo: file.bands.note_density.lo, hi: file.bands.note_density.hi };
-  const scan = { points: [0.06, 0.08, 0.1].map((v, i) => seamOk('note_density', v, t, { tick: i + 1, line: i + 2 })), runs: ['runs/x'], linesRead: 9, evidenceLines: 3 };
+  const scan = { points: [0.1, 0.11, 0.12].map((v, i) => seamOk('note_density', v, t, { tick: i + 1, line: i + 2 })), runs: ['runs/x'], linesRead: 9, evidenceLines: 3 };
   const { patterns, skipped } = findMintPatterns(scan.points, file.bands, 3);
   const { file: next, record } = await applyMint({ file, patterns, skipped, scan, minRepeats: 3, at: '2026-08-26T00:00:00Z' });
   assert.equal(next.version, 1);
@@ -181,8 +208,8 @@ test('applyMint: version increments, snapshot carries the moved edge, evidence c
 
 test('applyMint: needsJudgment without a judger → rejected, version unchanged', async () => {
   const file = defaultGateBands();
-  const override = { lo: 0.32, hi: 0.6 };
-  const scan = { points: [0.28, 0.29, 0.3].map(v => seamOk('note_density', v, override)), runs: ['runs/x'], linesRead: 3, evidenceLines: 3 };
+  const override = { lo: 0.05, hi: 0.6 };
+  const scan = { points: [0.02, 0.03, 0.04].map(v => seamOk('note_density', v, override)), runs: ['runs/x'], linesRead: 3, evidenceLines: 3 };
   const { patterns, skipped } = findMintPatterns(scan.points, file.bands, 3);
   assert.equal(patterns[0].needsJudgment, true);
   const { file: next, record } = await applyMint({ file, patterns, skipped, scan, minRepeats: 3 });
@@ -193,8 +220,8 @@ test('applyMint: needsJudgment without a judger → rejected, version unchanged'
 
 test('applyMint: the judger approves an adoption / rejects another — both recorded', async () => {
   const file = defaultGateBands();
-  const override = { lo: 0.32, hi: 0.6 };
-  const scan = { points: [0.28, 0.29, 0.3].map(v => seamOk('note_density', v, override)), runs: ['runs/x'], linesRead: 3, evidenceLines: 3 };
+  const override = { lo: 0.05, hi: 0.6 };
+  const scan = { points: [0.02, 0.03, 0.04].map(v => seamOk('note_density', v, override)), runs: ['runs/x'], linesRead: 3, evidenceLines: 3 };
   const { patterns, skipped } = findMintPatterns(scan.points, file.bands, 3);
   const approve = await applyMint({
     file, patterns, skipped, scan, minRepeats: 3,
@@ -238,7 +265,7 @@ test('gate-bands.json roundtrip: atomic write, tolerant load, corrupt → null',
 test('rollback: restores the prior snapshot AS A NEW VERSION — reversible reversal', async () => {
   let file = defaultGateBands();
   const t = { lo: file.bands.note_density.lo, hi: file.bands.note_density.hi };
-  const scan = { points: [0.06, 0.08, 0.1].map(v => seamOk('note_density', v, t)), runs: ['runs/x'], linesRead: 3, evidenceLines: 3 };
+  const scan = { points: [0.1, 0.11, 0.12].map(v => seamOk('note_density', v, t)), runs: ['runs/x'], linesRead: 3, evidenceLines: 3 };
   const { patterns, skipped } = findMintPatterns(scan.points, file.bands, 3);
   const minted = await applyMint({ file, patterns, skipped, scan, minRepeats: 3, at: '2026-08-26T00:00:00Z' });
   file = minted.file;
@@ -263,9 +290,9 @@ test('mint pass on a real-shape ledger fixture: gray-low density thrice → the 
     ])),
   ]);
   const scan = scanLedgers([dir]);
-  const standing = criticIntent();   // standing lo 0.15 ≠ evidence lo 0.32 → judgment needed
+  const standing = criticIntent();   // standing lo 0.15 ≠ evidence lo 0.32 → the canon covers more
   const { patterns } = findMintPatterns(scan.points, standing, 3);
   assert.equal(patterns.length, 1);
-  assert.equal(patterns[0].needsJudgment, true);
+  assert.ok(patterns[0].confirm, 'override evidence correcting inside the standing envelope confirms, never shrinks');
   rmSync(dir, { recursive: true, force: true });
 });

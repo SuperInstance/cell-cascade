@@ -25,7 +25,7 @@
 // (nudgeTargets — a gentle controller, clamped, logged). Form is fate;
 // the arc breathes.
 
-import { type TraceBar, type Critique, CritiqueObservation, type Severity } from './critic';
+import type { TraceBar, Critique, CritiqueObservation, Severity } from './critic';
 
 // ── the plan ────────────────────────────────────────────────────────────────
 
@@ -81,7 +81,7 @@ export function planLibretto(args: { bars: number; form?: string }): Libretto {
     cursor = span;
     const mean = slice.reduce((a, v) => a + v, 0) / Math.max(1, slice.length);
     return { name: letter, bars: spans[i], tension_target: Math.round(mean * 1000) / 1000, role: roleFor(letter, form, i) };
-  });
+  }).filter(s => s.bars > 0);   // a form with more letters than bars yields no ghost sections
 
   const peak = tension_targets.indexOf(Math.max(...tension_targets));
   const narrative = `a ${bars}-bar ${form}: the statement opens spare, the arc peaks at bar ${peak + 1} where the harmony leans in, and the last section settles the piece home`;
@@ -145,6 +145,10 @@ export const ARC_NUDGE_MAX = 0.08;
 export function nudgeTargets(
   targets: number[], realized: number[],
 ): { targets: number[]; drift: number; nudge: number } {
+  // the controller refuses garbage: one non-finite reading is a no-op
+  if (![...targets, ...realized].every(Number.isFinite)) {
+    return { targets, drift: 0, nudge: 0 };
+  }
   const n = Math.min(realized.length, targets.length);
   if (n === 0) return { targets, drift: 0, nudge: 0 };
   const drift = realized.slice(0, n).reduce((a, v, i) => a + (v - targets[i]), 0) / n;
@@ -200,7 +204,7 @@ export function arcObservations(
   for (let i = 0; i < trace.length && i < targets.length; i++) {
     const t = trace[i].features['harmonic_tension'];
     const target = targets[i];
-    if (t === undefined || !Number.isFinite(target)) continue;
+    if (t === undefined || !Number.isFinite(t) || !Number.isFinite(target)) continue;
     const diff = t - target;
     if (Math.abs(diff) <= TENSION_TARGET_TOL) continue;
     const severity: Severity = Math.abs(diff) > TENSION_TARGET_TOL * 2 ? 'bad' : 'warn';
