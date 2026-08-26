@@ -1,0 +1,13 @@
+[package]
+name = "qm-runner"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+quilt-vm = { path = "/home/eileen/projects/quilt-vm-rust" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[[bin]]
+name = "qm-runner"
+path = "src/main.rs"
