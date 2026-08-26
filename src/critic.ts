@@ -480,6 +480,10 @@ export interface CycleRound {
   critique: Critique | null;
   accepted: boolean;
   seamFailed: boolean;
+  /** v0.5: who wrote round 1's bars — 'compose' (the bandleader through
+   *  the seam) or 'arranger' (stock tissue at cost 0, or the arranger's
+   *  escalation wearing the bandleader's voice). Rounds 2+ are 'compose'. */
+  via?: 'compose' | 'arranger';
 }
 
 export interface CycleResult {
@@ -511,6 +515,11 @@ export async function composeCycle(io: CycleIO, args: {
   tempo?: number;
   outline?: Record<string, unknown>;
   tensionTargets?: number[];
+  /** v0.5 — the ARRANGER hook: if present, ROUND 1 asks the arranger first
+   *  (stock table hit = cost 0; a miss escalates through the bandleader
+   *  wearing the arranger's context — one spend). Returning null (or empty
+   *  bars) falls back to the bandleader's own compose for the window. */
+  serveFirst?: (payload: Record<string, unknown>) => Promise<{ bars: string[]; serve: 'arranger-table' | 'arranger-escalated' } | null>;
 }): Promise<CycleResult> {
   const rounds: CycleRound[] = [];
   const acceptedSoFar: string[] = [];
@@ -527,13 +536,27 @@ export async function composeCycle(io: CycleIO, args: {
       ...(steering ? { steering } : {}),
       ...(args.outline ? { outline: args.outline } : {}),
     };
-    const fired = await io.fireCompose(payload);
+    const fired = await (async () => {
+      // v0.5: round 1 may arrive from the arranger — stock tissue at cost 0
+      // or its own escalation through the bandleader. Failure is honest:
+      // null/empty falls through to the bandleader's compose.
+      if (round === 1 && args.serveFirst) {
+        const served = await args.serveFirst(payload);
+        if (served && served.bars.length) {
+          return { ok: true, mode: served.serve, answer: served.bars.join('\n'), latencyMs: 0 };
+        }
+      }
+      return await io.fireCompose(payload);
+    })();
+    const via: CycleRound['via'] = fired.mode === 'arranger-table' || fired.mode === 'arranger-escalated' ? 'arranger' : 'compose';
     if (!fired.ok) {
       composeErrors++;
       rounds.push({ round, payload, bars: [], serve: 'none', critique: null, accepted: false, seamFailed: false });
       break;                       // honest: nothing served, nothing faked
     }
-    const bars = args.extract(fired.answer, args.bars);
+    const bars = fired.mode === 'arranger-table' || fired.mode === 'arranger-escalated'
+      ? fired.answer.split(/\r?\n/).filter(Boolean)   // already-extracted bars
+      : args.extract(fired.answer, args.bars);
     if (!bars.length) {
       composeErrors++;
       rounds.push({ round, payload, bars: [], serve: 'none', critique: null, accepted: false, seamFailed: false });
@@ -569,7 +592,7 @@ export async function composeCycle(io: CycleIO, args: {
     const accepted = critique === null // ear unavailable → v0.2 semantics
       ? true
       : critique.verdict === 'accept' || isLast;
-    const cycleRound: CycleRound = { round, payload, bars, serve, critique, accepted, seamFailed };
+    const cycleRound: CycleRound = { round, payload, bars, serve, critique, accepted, seamFailed, via };
     rounds.push(cycleRound);
     lastServed = cycleRound;
     if (accepted) {

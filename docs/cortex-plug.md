@@ -1,11 +1,152 @@
 # THE CORTEX PLUG — the first totipotent cell that composes
 
+*v0.5, 2026-08-26. The organism fills a stage: BASS and DRUM cells
+(differentiated rule tables, kimi-signed) under one clock, an ARRANGER
+under the bandleader as the compose-side distillation target, and the
+plainsong MCP ensemble session as the wire. v0.4 history below.*
+
+## v0.5 — THE ENSEMBLE: the band on one clock, novelty the only seam
+
+```
+  clock ──tick──► METRONOME (unchanged — the band-clock scheduler
+        │          pattern; 1ms drift over 269 boundaries was v0.2's
+        │          finding, the spine still never thinks)
+        │
+        ├──compose──► ARRANGER [differentiated, UNDER the bandleader]
+        │              │  chord → stock voicing table (seeded from
+        │              │  gate/arranger-voicings.json, the mint canon)
+        │              │
+        │         HIT ─┴─ cost 0, round 1 of the GAN loop is SERVED:
+        │              │  the stock bar rebuilds (core + rhythm, vel
+        │              │  follows the arc) → the ear judges it free →
+        │              │  a stock that stands ends the cycle (the
+        │              │  cortex does not re-derive what it wrote)
+        │         MISS ─┬─ the table's hole: the arrange signal
+        │              │  ESCALATES to the bandleader (one spend,
+        │              │  wearing the arranger's role context; the
+        │              │  candidate is recorded) → the accepted bar
+        │              │  MINTS if ≥70% chord-tone clean: the rule
+        │              │  grows on the worker sheet (candidate
+        │              │  resolved) AND the versioned file persists
+        │              ▼
+        │        compose cycle (v0.4 GAN: analyze → critique →
+        │              steering → round 2 = the bandleader, only on
+        │              revise — an arc the stock can't serve pays)
+        │
+        ├──compose_bass──► BASS CELL [differentiated, rule table]
+        │              root → fifth → the quality's DEFINING tone
+        │              (kimi: m7→b7, maj7→7, dom7→3, m7b5→b5) →
+        │              half-step-BELOW leading tone into the next
+        │              root. c1..b2 hard (the piano owns c3+). Locked
+        │              to the same CHANGES the bandleader harmonizes;
+        │              an unknown QUALITY misses → the seam
+        │
+        └──compose_drums─► DRUM CELL [multipotent, forming table —
+                           the serve-split: swing/bossa/ballad/rock
+                           presets are kimi-corrected table tissue
+                           (cost 0); the turnaround fill at section
+                           ends is table too — a fill the table does
+                           NOT hold misses to the cell's own scoped
+                           model. Fills escalate ONLY on miss]
+
+  all three voices, one downbeat ──► plainsong ensemble session
+        (ensemble_open/join/write_part/render): parts written against
+        each voice's base version; a stale write is REFUSED with the
+        state to rebase onto (one rebase retry, never a silent
+        overwrite); the merged score compiles to the band's MIDI
+```
+
+What shipped (`src/ensemble.ts` + the `serveFirst` hook in
+`src/critic.ts` + driver wiring, on `cortex-v05`):
+
+- **THE BASS CELL** — walking shells as a rule table. kimi signed the
+  musical rules before they froze (2026-08-26): defining tone per
+  quality, the leading-tone approach regardless of distance (my draft
+  had `b2→g2`, a m3 drop — kimi: "leading tone to G is f#"), dim7's
+  bb7 spelled as the 6th because double accidentals are outside the
+  notation grammar. The kimi REVIEW pass then caught the live bug my
+  tests blessed: half-diminished walked the P5 where the shell's fifth
+  is a b5 — fixed + regression-pinned (174/174).
+- **THE DRUM CELL** — sclerotic-pattern presets inside multipotent
+  tissue (the honest reading of "the sclerotic tier": a pure sclerotic
+  cell cannot escalate anything, so the patterns are table and the
+  SEAM is reserved for the novel fill). kimi corrected all four
+  presets: swing rides the skip beat (`d#2 . d#2-f#1 d#2 d#2 .
+  d#2-f#1 d#2`), bossa's kick is 1-&2-3 with rimclick e1 on 2&4,
+  ballad brushes 2&4 only (my draft used d2 — "a bug, not a style
+  choice"), rock's backbeat carries hat 8ths.
+- **THE ARRANGER** — the compose-side serve-split. Round 1 of every
+  compose cycle asks the chart first (the `serveFirst` hook): a held
+  chord serves its stock voicing at cost 0; a miss escalates through
+  the bandleader (which IS the compose — no double spend) and the
+  accepted bar mints if it is ≥70% chord tones (color-dense bars are
+  honest novelty, recorded unminted). Mints grow the rule on the
+  WORKER sheet (the escalation candidate resolves — the next arrange
+  of that chord hits the worker's table at cost 0, in-ledger) and the
+  versioned `gate/arranger-voicings.json` persists the canon across
+  runs. A cold start is the maximal hole: v0.5 also fixes `firing.ts`
+  so a differentiated cell with an EMPTY table escalates like a miss
+  (the germ line speaks while the table is unborn).
+- **THE WIRE** — the plainsong ensemble session. One clock: bass,
+  drums and the arrange/compose cycle all fire inside the metronome's
+  downbeat. Voices disjoint by construction (the driver owns voice
+  tags; every served line is normalized to its voice — bass
+  escalations fold into c1..b2, drum answers fold to the kit map).
+  Writes go per downbeat against each voice's base version; section
+  names are UNIQUE (AABA → A, A2, B, A3 — the merge is deterministic
+  on unique names; repeated letters concatenate, a lesson the wire
+  taught live). `ensemble_render` merges and compiles the band.
+- **ENSEMBLE=1** toggles the band in the driver; the default stays
+  solo piano — the v0.4 loop byte-for-byte (pinned by test).
+
+### The evidence (real runs, 2026-08-26 ~18:58–19:12 UTC — GLM-5.3)
+
+Three live runs (artifacts in `runs/`, ledgers complete):
+
+- **Run 1** (`TICKS=16 ENSEMBLE=1`, cold arranger, 4 bars): 4 arrange
+  escalations — the bandleader answered each wearing the arranger's
+  context — 3 MINTS (Dm7 → `d3-f3-a3-c4`, G7, A7b9), 1 honest refusal
+  (Cmaj7's bar was #11-color-dense: unclean, never minted). Bass 4/4
+  table, drums 4/4 table, ear 4/4 cost-0. Session wrote 14 versions,
+  0 conflicts, band MIDI rendered. Canon: `gate/arranger-voicings.json
+  v1`.
+- **Run 2** (`TICKS=16 BARS_PER=2 ENSEMBLE=1`, 8 bars): the canon from
+  run 1 loaded at startup — Dm7/G7/A7b9 HIT the table at cost 0
+  (cross-run distillation, first proof), 5 fresh escalations, 1 mint
+  (E7b9). One seam adjudication live: an arranged window read gray on
+  syncopation (0.143) + the arc; the seam adjudicated, round 2
+  recomposed, accepted.
+- **Run 3** (same command, post-fix): **50% of arrange serves at cost
+  0** (4 hits / 4 escalations / 1 mint — A7). The arc check caught a
+  replayed stock comping too plain for the bridge (0.296 vs 0.622),
+  round 2's steered recompose stood (seam-adjudicated). The merged
+  band score: AABA, 8 bars, three voices, 0 compile errors — walking
+  bass locked to the changes, swing ride with turnaround fills at
+  every section end, piano comps and lines. Canon: v3, 5 voicings.
+
+The serve-split across all ensemble runs: bass 20/20 table, drums
+20/20 table, arranger 7 hits / 13 escalations (35%→50% as the canon
+mints — the table grows toward the changes), ear 100% cost-0 critiques
+except the two genuine gray readings the seam adjudicated. The
+arranger minted 5 voicings across three runs and refused the
+#11-colored ones honestly.
+
+### Run the band yourself
+
+```bash
+npm run dev                                   # worker + .dev.vars MODEL_*
+# other terminal, from plainsong-mcp: .venv/bin/plainsong-mcp --http --port 8765
+TICKS=16 ENSEMBLE=1 npm run cortex:plug       # the band (cold arranger)
+TICKS=16 BARS_PER=2 ENSEMBLE=1 npm run cortex:plug   # 8 bars: hits + mints
+npm run cortex:plug                           # default: solo piano (v0.4)
+```
+
+## v0.4 — DISTILLATION MINTING + THE LIBRETTIST: the table grows itself
+
 *v0.4, 2026-08-26. The gate grows itself: seam adjudications in the run
 ledger mint into versioned gate bands (evidence-cited, judger-signed,
 reversible), the LIBRETTIST holds the score-level plan, and one thought
-writes multi-bar windows. v0.3 history below.*
-
-## v0.4 — DISTILLATION MINTING + THE LIBRETTIST: the table grows itself
+writes multi-bar windows.*
 
 ```
   runs/*/tick-log.jsonl ──gate evidence lines──► THE MINT PASS (npm run
@@ -303,6 +444,13 @@ TICKS=32 EVERY=4 npm run cortex:plug          # → runs/cortex-plug-*/
 With the seam unconfigured the driver dies at the first downbeat with the
 honest `model-required` boundary — nothing is shimmed, nothing faked
 (pinned in `test/cortex.test.ts`).
+
+## What v0.5 addressed: (3)'s compose-side arranger — SHIPPED (the
+ARRANGER under the bandleader, this drop); (5) the ensemble — SHIPPED
+(bass + drum cells, the ensemble session wire, ENSEMBLE=1); (4) the
+real-time spine — STILL OPEN (the driver's clock remains the 120ms
+breath loop; the band-clock scheduler as tick source is v0.6's seam).
+The v0.4 list below is kept as it stood:
 
 ## What v0.4 addressed (from the list below): (1) the librettist/outline
 half — SHIPPED as the LIBRETTIST; (2) compositional memory — SHIPPED
