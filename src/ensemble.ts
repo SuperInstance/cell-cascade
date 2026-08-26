@@ -81,7 +81,7 @@ function normalizeQuality(tail: string): string {
 /** Interval (semitones above root) for a spelled degree name. */
 const DEGREE_SEMITONES: Record<string, number> = {
   '1': 0, 'b2': 1, '2': 2, 'b3': 3, '3': 4, '4': 5, 'b5': 6, '5': 7,
-  'b6': 8, '6': 9, 'b7': 10, '7': 11, 'b9': 13, '9': 14,
+  'b6': 8, '6': 9, 'b7': 10, '7': 11, 'b9': 13, '9': 14, '11': 17, '13': 21,
 };
 
 /** The frozen quality table — kimi-signed 2026-08-26 ("slot4 = the quality's
@@ -110,22 +110,25 @@ export const QUALITY_DEGREES: Record<string, { third: string; fifth: string; sev
  *  demands (E→G#). Single accidentals only — the notation grammar freezes
  *  at one `#`/`b`, which is why dim7 carries its 7th as the 6th. */
 export function spelledDegree(chord: ParsedChord, degree: string): { name: string; pc: number; octaveShift: number } | null {
-  const q = QUALITY_DEGREES[chord.quality];
-  const semis = DEGREE_SEMITONES[degree];
-  if (semis === undefined) return null;
-  // degree number: 'b9'→9, '3'→3, 'bb7'→7 …; 9 and up wrap an octave up
-  const dm = /^b*(\d+)$/.exec(degree);
+  // kimi review 2026-08-26: accept sharp-prefixed degrees (#4, #11) too —
+  // each accidental shifts the interval one semitone
+  const dm = /^[#b]*(\d+)$/.exec(degree);
   if (!dm) return null;
+  const accidentalCount = degree.slice(0, degree.length - dm[1].length).split('').reduce(
+    (a, c) => a + (c === '#' ? 1 : -1), 0);
   const num = Number(dm[1]);
+  const plain = DEGREE_SEMITONES[String(num)];
+  if (plain === undefined) return null;
+  const semis = plain + accidentalCount;
   const rootIdx = LETTER_ORDER.indexOf(chord.root[0] as typeof LETTER_ORDER[number]);
   const letterIdx = (rootIdx + (num - 1)) % 7;
   const letter = LETTER_ORDER[letterIdx];
-  const octaveShift = Math.floor((rootIdx + (num - 1)) / 7);   // 9th → one octave up
-  const targetPc = (chord.rootPc + semis) % 12;
+  const octaveShift = Math.floor((num - 1) / 7);               // 9th → one octave up
+  const targetPc = (chord.rootPc + semis % 12 + 12) % 12;
   let delta = (targetPc - NOTE_PC[letter] + 12) % 12;
   if (delta > 6) delta -= 12;                                  // nearest accidental
   if (delta === 0) return { name: letter, pc: targetPc, octaveShift };
-  if (Math.abs(delta) > 2) return null;                        // double-spelled — outside grammar
+  if (Math.abs(delta) >= 2) return null;                       // double-spelled — outside the single-#/b grammar
   return { name: letter + (delta > 0 ? '#' : 'b'), pc: targetPc, octaveShift };
 }
 
@@ -203,7 +206,10 @@ export function bassForBar(chord: ParsedChord, nextChord: ParsedChord, prevTailM
   const rootMidi = nearestInst(chord.rootPc, prevTailMidi ?? midiOfName('e1'), BASS_FLOOR_MIDI, BASS_CEIL_MIDI);
   const fifth = spelledDegree(chord, q.fifth);
   if (!fifth) return null;
-  let n2 = rootMidi + 7 <= BASS_CEIL_MIDI ? rootMidi + 7 : rootMidi - 5;
+  // kimi review 2026-08-26: the fifth INTERVAL follows the quality — a
+  // half-diminished shell's fifth is a b5 (6 semitones), not the P5
+  const fifthIv = (fifth.pc - chord.rootPc + 12) % 12;
+  let n2 = rootMidi + fifthIv <= BASS_CEIL_MIDI ? rootMidi + fifthIv : rootMidi + fifthIv - 12;
   n2 = clamp(n2, BASS_FLOOR_MIDI, BASS_CEIL_MIDI);
   const def = spelledDegree(chord, q.defining);
   if (!def) return null;
@@ -573,10 +579,23 @@ export function normalizeToVoice(line: string, voice: string): string {
 
 // ── the plainsong ensemble session wire (pure helpers) ──────────────────────
 
+/** Uniquify section names for the ensemble wire (AABA → A, A2, B, A3):
+ *  the session merge is deterministic on UNIQUE names — repeated letters
+ *  in a part's headers concatenate, so the form's repeats get numbered. */
+export function uniquifySections(sections: LibrettoSection[]): LibrettoSection[] {
+  const seen = new Map<string, number>();
+  return sections.map(s => {
+    const n = (seen.get(s.name) ?? 0) + 1;
+    seen.set(s.name, n);
+    return n === 1 ? s : { ...s, name: `${s.name}${n}` };
+  });
+}
+
 /** Assemble a voice's part content from its bars, one row per declared
  *  section (the wire's merge is deterministic on that shape — same-name
  *  section groups concatenate, so the part must mirror the manifest's form
- *  exactly). A row carries one vel: the mean of its bars' dynamics. */
+ *  exactly, with UNIQUE names). A row carries one vel: the mean of its
+ *  bars' dynamics. */
 export function partContent(sections: LibrettoSection[], voice: string, bars: string[]): string {
   if (!bars.length) return '';
   const lines: string[] = [];

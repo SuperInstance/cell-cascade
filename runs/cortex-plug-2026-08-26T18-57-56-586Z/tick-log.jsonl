@@ -1,0 +1,51 @@
+{"tick":1,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":1}
+{"tick":1,"outline":0,"mode":"table","section":"A","arc":"peaking","tension_target":0.584,"latency_ms":1}
+{"tick":1,"arrange":0,"chord":"Dm7","mode":"escalated","answered_by":"bandleader","candidate":2,"tokens":2401,"answer_head":"@piano | d3 . . f3-a3-c4 . e4 d4 . | vel: 66"}
+{"tick":1,"critique":0,"round":1,"serve":"cheap","mode":"table","ok":true,"verdict":"accept","latency_ms":1}
+{"tick":1,"bass":0,"chord":"Dm7","quality":"m7","mode":"table","ok":true}
+{"tick":1,"drums":0,"kind":"compose_drums","style":"swing","mode":"table","ok":true}
+{"ens_write":true,"voice":"piano","version":5,"bars":1}
+{"ens_write":true,"voice":"bass","version":6,"bars":1}
+{"ens_write":true,"voice":"drums","version":7,"bars":1}
+{"arranger_mint":true,"chord":"Dm7","core":["d3","f3","a3","c4"],"candidate":2,"resolved":true,"piano_via":"arranger"}
+{"tick":2,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":2}
+{"tick":3,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":3}
+{"tick":4,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":4}
+{"tick":5,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":5}
+{"tick":5,"outline":1,"mode":"table","section":"A","arc":"peaking","tension_target":0.703,"latency_ms":1}
+{"tick":5,"arrange":1,"chord":"G7","mode":"escalated","answered_by":"bandleader","candidate":3,"tokens":2113,"answer_head":"@piano | . f3-b3-e4 . . d4 . b3 . | vel: 78"}
+{"tick":5,"critique":1,"round":1,"serve":"cheap","mode":"table","ok":true,"verdict":"accept","latency_ms":1}
+{"tick":5,"bass":1,"chord":"G7","quality":"7","mode":"table","ok":true}
+{"tick":5,"drums":1,"kind":"fill_drums","fill":"turnaround","mode":"table","ok":true}
+{"ens_write":true,"voice":"piano","version":8,"bars":2}
+{"ens_write":true,"voice":"bass","version":9,"bars":2}
+{"ens_write":true,"voice":"drums","version":10,"bars":2}
+{"arranger_mint":true,"chord":"G7","core":["f3","b3","d4"],"candidate":3,"resolved":true,"piano_via":"arranger"}
+{"tick":6,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":6}
+{"tick":7,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":7}
+{"tick":8,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":8}
+{"tick":9,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":9}
+{"tick":9,"outline":2,"mode":"table","section":"B","arc":"peaking","tension_target":0.703,"latency_ms":1}
+{"tick":9,"arrange":2,"chord":"Cmaj7","mode":"escalated","answered_by":"bandleader","candidate":4,"tokens":3669,"answer_head":"@piano | . e3-g3-b3-d4 . f#4 . e4 . . | vel: 86"}
+{"tick":9,"critique":2,"round":1,"serve":"cheap","mode":"table","ok":true,"verdict":"accept","latency_ms":1}
+{"tick":9,"bass":2,"chord":"Cmaj7","quality":"maj7","mode":"table","ok":true}
+{"tick":9,"drums":2,"kind":"compose_drums","style":"swing","mode":"table","ok":true}
+{"ens_write":true,"voice":"piano","version":11,"bars":3}
+{"ens_write":true,"voice":"bass","version":12,"bars":3}
+{"ens_write":true,"voice":"drums","version":13,"bars":3}
+{"tick":10,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":10}
+{"tick":11,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":11}
+{"tick":12,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":12}
+{"tick":13,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":13}
+{"tick":13,"outline":3,"mode":"table","section":"B","arc":"settling","tension_target":0.584,"latency_ms":1}
+{"tick":13,"arrange":3,"chord":"A7b9","mode":"escalated","answered_by":"bandleader","candidate":5,"tokens":3454,"answer_head":"@piano | a2 . . e4 d4 . c#4-bb3 . | vel: 72"}
+{"tick":13,"critique":3,"round":1,"serve":"cheap","mode":"table","ok":true,"verdict":"accept","latency_ms":1}
+{"tick":13,"bass":3,"chord":"A7b9","quality":"7b9","mode":"table","ok":true}
+{"tick":13,"drums":3,"kind":"fill_drums","fill":"turnaround","mode":"table","ok":true}
+{"ens_write":true,"voice":"piano","version":14,"bars":4}
+{"ens_write":true,"voice":"bass","version":15,"bars":4}
+{"ens_write":true,"voice":"drums","version":16,"bars":4}
+{"arranger_mint":true,"chord":"A7b9","core":["a3","bb3","c#4","e4"],"candidate":5,"resolved":true,"piano_via":"arranger"}
+{"tick":14,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":14}
+{"tick":15,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":15}
+{"tick":16,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":16}

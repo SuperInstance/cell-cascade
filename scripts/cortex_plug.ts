@@ -32,7 +32,7 @@ import {
   parseChord, bassForBar, bassCellSheet, normalizeBassLine,
   drumForBar, drumFill, drumCellSheet, normalizeDrumLine,
   arrangerSheet, stockBarFor, loadArrangerVoicings, saveArrangerVoicings, mintArrangerVoicings,
-  partContent, parseEnsembleWriteResult, midiOfName, normalizeToVoice,
+  partContent, parseEnsembleWriteResult, midiOfName, normalizeToVoice, uniquifySections,
   defaultArrangerVoicings, type StockVoicing,
 } from '../src/ensemble';
 
@@ -188,6 +188,9 @@ async function main(): Promise<void> {
   const voiceVersion: Record<string, number> = { piano: 0, bass: 0, drums: 0 };
   const voiceBars: Record<string, string[]> = { piano: [], bass: [], drums: [] };
   let ensWrites = 0, ensRebases = 0, ensWriteFailures = 0;
+  // the wire's section names are UNIQUE (AABA → A, A2, B, A3): the session
+  // merge is deterministic on unique names — repeated letters concatenate
+  const sessionSections = uniquifySections(libretto.sections);
   const arrStats = { hits: 0, misses: 0, escalations: 0, mints: 0, held: 0, unclean: 0 };
   const bassStats = { table: 0, escalated: 0, failed: 0 };
   const drumStats = { table: 0, seam: 0, seamFailures: 0 };
@@ -196,7 +199,7 @@ async function main(): Promise<void> {
 
   async function writePart(voice: 'piano' | 'bass' | 'drums'): Promise<boolean> {
     if (!session) return false;
-    const content = partContent(libretto.sections, voice, voiceBars[voice]);
+    const content = partContent(sessionSections, voice, voiceBars[voice]);
     if (!content) return false;
     for (let attempt = 0; attempt < 2; attempt++) {
       const res = await mcpCall('ensemble_write_part', {
@@ -246,7 +249,7 @@ async function main(): Promise<void> {
     const opened = await mcpCall('ensemble_open', {
       session, title: `${ORG} — what the organism wrote`, key: KEY, tempo: TEMPO,
       bars: TOTAL_BARS,
-      sections: libretto.sections.map(s => ({ name: s.name, description: `${s.role} — ${s.bars} Bars`, bars: s.bars })),
+      sections: sessionSections.map(s => ({ name: s.name, description: `${s.role} — ${s.bars} Bars`, bars: s.bars })),
       voices: ['@piano', '@bass', '@drums'],
     });
     if (opened.isError) die(`ensemble_open refused: ${opened.text.slice(0, 200)}`);

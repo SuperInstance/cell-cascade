@@ -1,0 +1,343 @@
+{
+  "organism": "cortex-plug-185756",
+  "run": "runs/cortex-plug-2026-08-26T18-57-56-586Z",
+  "ticks": 16,
+  "every": 4,
+  "bars_written": 4,
+  "composes_served": 4,
+  "compose_errors": 0,
+  "tokens": 11637,
+  "model_ms": 104565,
+  "table_ms": 16,
+  "changes": [
+    "Dm7",
+    "G7",
+    "Cmaj7",
+    "A7b9",
+    "Fmaj7",
+    "Bbmaj7",
+    "E7b9",
+    "A7"
+  ],
+  "model": "glm-5.3",
+  "compile": "cortex-plug-185756 — what the organism wrote  --  C, 100 bpm, 4/4",
+  "gan": {
+    "rounds_configured": 2,
+    "accepted_via": {
+      "verdict": 4
+    },
+    "gate_bands": {
+      "version": 3,
+      "path": "gate/gate-bands.json",
+      "standing": {
+        "note_density": {
+          "lo": 0.15,
+          "hi": 0.6
+        },
+        "syncopation": {
+          "lo": 0.2,
+          "hi": 1
+        },
+        "register_spread": {
+          "lo": 0.05,
+          "hi": 0.25
+        },
+        "rest_ratio": {
+          "lo": 0,
+          "hi": 0.3
+        },
+        "harmonic_tension": {
+          "lo": 0.15,
+          "hi": 0.763
+        },
+        "interval_size": {
+          "lo": 0,
+          "hi": 0.65
+        }
+      },
+      "intent_run": {
+        "note_density": {
+          "lo": 0.15,
+          "hi": 0.6
+        },
+        "syncopation": {
+          "lo": 0.2,
+          "hi": 1
+        },
+        "register_spread": {
+          "lo": 0.05,
+          "hi": 0.25
+        },
+        "rest_ratio": {
+          "lo": 0,
+          "hi": 0.3
+        },
+        "harmonic_tension": {
+          "lo": 0.15,
+          "hi": 0.763
+        },
+        "interval_size": {
+          "lo": 0,
+          "hi": 0.65
+        }
+      }
+    },
+    "critique_serve": {
+      "critiques": 4,
+      "cheap": 4,
+      "seam": 0,
+      "seam_failures": 0,
+      "cheap_pct": 100,
+      "seam_pct": 0
+    },
+    "revision_rounds": 0,
+    "early_accepts": 4,
+    "analyze_failures": 0,
+    "intent": {
+      "note_density": {
+        "lo": 0.15,
+        "hi": 0.6
+      },
+      "syncopation": {
+        "lo": 0.2,
+        "hi": 1
+      },
+      "register_spread": {
+        "lo": 0.05,
+        "hi": 0.25
+      },
+      "rest_ratio": {
+        "lo": 0,
+        "hi": 0.3
+      },
+      "harmonic_tension": {
+        "lo": 0.15,
+        "hi": 0.763
+      },
+      "interval_size": {
+        "lo": 0,
+        "hi": 0.65
+      }
+    }
+  },
+  "ensemble": {
+    "session": "cortex-plug-185756-band",
+    "drum_style": "swing",
+    "voices": {
+      "piano": 4,
+      "bass": 4,
+      "drums": 4
+    },
+    "writes": 12,
+    "rebases": 0,
+    "write_failures": 0,
+    "render": {
+      "ok": true,
+      "midi": "/home/eileen/projects/plainsong-mcp/.plainsong/workspace/ensemble/cortex-plug-185756-band/cortex-plug-185756-band.mid",
+      "summary": "{\"score\":{\"title\":\"cortex-plug-185756 — what the organism wrote\",\"key\":\"C\",\"tempo\":100,\"meter\":\"4/4\",\"dialect\":\"absolute\",\"sections\":2,\"bars\":4,\"players\":[\"bass\",\"drums\",\"piano\"],\"errors\":0,\"warnings\":0},\"arrangement\":{\"tracks\":[{\"name\":\"bass\",\"role\":\"player\",\"instrument\":\"bass\",\"program\":33,\"notes\""
+    },
+    "arranger": {
+      "file_version_before": 0,
+      "held_at_start": 0,
+      "held_at_end": 3,
+      "hits": 0,
+      "misses": 4,
+      "escalations": 4,
+      "mints": 3,
+      "held": 0,
+      "unclean": 1,
+      "voicings": {
+        "Dm7": {
+          "chord": "Dm7",
+          "core": [
+            "d3",
+            "f3",
+            "a3",
+            "c4"
+          ],
+          "rhythm": [
+            1,
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0
+          ],
+          "vel": 66,
+          "minted_from": {
+            "run": "runs/cortex-plug-2026-08-26T18-57-56-586Z",
+            "bar": 0
+          }
+        },
+        "G7": {
+          "chord": "G7",
+          "core": [
+            "f3",
+            "b3",
+            "d4"
+          ],
+          "rhythm": [
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "vel": 78,
+          "minted_from": {
+            "run": "runs/cortex-plug-2026-08-26T18-57-56-586Z",
+            "bar": 1
+          }
+        },
+        "A7b9": {
+          "chord": "A7b9",
+          "core": [
+            "a3",
+            "bb3",
+            "c#4",
+            "e4"
+          ],
+          "rhythm": [
+            1,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0
+          ],
+          "vel": 72,
+          "minted_from": {
+            "run": "runs/cortex-plug-2026-08-26T18-57-56-586Z",
+            "bar": 3
+          }
+        }
+      }
+    },
+    "bass": {
+      "table": 4,
+      "escalated": 0,
+      "failed": 0
+    },
+    "drums": {
+      "table": 4,
+      "seam": 0,
+      "seamFailures": 0
+    }
+  },
+  "health": {
+    "serve_modes_pct": {
+      "model": 0,
+      "table": 89.7,
+      "escalated": 10.3,
+      "model_required": 0,
+      "error": 0
+    },
+    "zero_cost_serve_pct": 51.3,
+    "cost_tumor": {
+      "threshold_pct": 5,
+      "totipotent_serve_pct": 10.3,
+      "window": 39,
+      "warning": true,
+      "note": "COST TUMOR: the germ line served 10.3% of the last 39 signals (> 5%) — the organism is leaning on its stem cells; differentiate dedicated tissue or grow rule tables from distillation candidates"
+    },
+    "serve_split": {
+      "window": 39,
+      "by_kind": {
+        "tick": {
+          "signals": 16,
+          "table": 16,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        },
+        "rule-grown": {
+          "signals": 3,
+          "table": 3,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        },
+        "fill_drums": {
+          "signals": 2,
+          "table": 2,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        },
+        "compose_bass": {
+          "signals": 4,
+          "table": 4,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        },
+        "critique": {
+          "signals": 4,
+          "table": 4,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        },
+        "arrange": {
+          "signals": 4,
+          "table": 0,
+          "model": 0,
+          "escalated": 4,
+          "error": 0,
+          "table_pct": 0,
+          "model_pct": 0
+        },
+        "outline": {
+          "signals": 4,
+          "table": 4,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        },
+        "compose_drums": {
+          "signals": 2,
+          "table": 2,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        }
+      },
+      "worst_offender": "rule-grown",
+      "note": "serve split by kind: tick 100% table / 0% seam · rule-grown 100% table / 0% seam · fill_drums 100% table / 0% seam · compose_bass 100% table / 0% seam · critique 100% table / 0% seam · arrange 0% table / 0% seam · outline 100% table / 0% seam · compose_drums 100% table / 0% seam — rule-grown leans hardest on the seam (0%)"
+    }
+  },
+  "wiring": {
+    "spine": "clock →(tick)→ c_b5f91a2d [sclerotic · rule table · cost 0]",
+    "cortex": "c_b5f91a2d →(compose)→ c_e36914b0 [totipotent · model seam · glm-5.3]",
+    "ear": "c_e36914b0 →(critique)→ c_417ab228 [multipotent · frozen gate cost 0 · seam glm-5.3 only on ambiguity]",
+    "plan": "clock →(outline)→ c_18531541 [sclerotic · AB · tension arc · cost 0]",
+    "loop": "outline → compose → analyze_features → critique (bands + arc) → steering → next compose payload (2 round cap)",
+    "mint": "gate evidence lines → tick-log.jsonl → npm run mint:bands → gate-bands.json v3 (loaded at startup)",
+    "arranger": "c_b5f91a2d →(arrange)→ c_f22f973f [differentiated · under the bandleader · stock hits cost 0 · misses escalate + mint]",
+    "floor": "c_b5f91a2d →(compose_bass)→ c_e13e7ddb [differentiated · rule-table voice-leading · c1..b2 · unknown quality escalates]",
+    "kit": "c_b5f91a2d →(compose_drums|fill_drums)→ c_11a7492c [multipotent · style presets cost 0 · fills think only on miss]",
+    "wire": "plainsong ensemble session \"cortex-plug-185756-band\" — join/write_part (base_version, conflict rebase)/render · ONE CLOCK: the metronome's downbeat fires the whole band",
+    "hands": "driver accumulates bars → plainsong MCP compile_score → MIDI"
+  }
+}

@@ -212,8 +212,12 @@ export async function fireSignal(
       mode = 'table-miss'; ok = false;
       response = { miss: true, hint: 'sclerotic tissue with no rule for this signal — wound-heal or extend the table' };
     }
-  } else if (target.tier === 'differentiated' && rules.length > 0) {
-    // ── differentiated with a forming table: tendency first, lineage second
+  } else if (target.tier === 'differentiated') {
+    // ── differentiated: tendency first, lineage second. v0.5: an EMPTY
+    //    table is the maximal hole — a cold-start differentiated cell
+    //    escalates on every miss exactly like a forming one (the germ line
+    //    speaks while the table is unborn; each escalation is a candidate
+    //    the mint can grow into the first rule).
     const m = matchRule(rules, input.kind, input.payload);
     if (m.hit) {
       mode = 'table'; ok = true; response = m.response!;
@@ -291,7 +295,7 @@ export async function fireSignal(
       latencyMs = modelLog?.latency_ms ?? latencyMs;
     }
   } else {
-    // ── totipotent / ruleless multipotent & differentiated: the bridge
+    // ── totipotent / ruleless multipotent: the bridge
     const via = await serveViaModel(store, target, input);
     ({ ok, mode, response, cost_per_call: costPerCall, model_log: modelLog, answered_by: answeredBy } = via);
     latencyMs = modelLog ? modelLog.latency_ms : latencyMs;

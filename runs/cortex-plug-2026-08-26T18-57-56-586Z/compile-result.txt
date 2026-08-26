@@ -1,0 +1,5 @@
+cortex-plug-185756 — what the organism wrote  --  C, 100 bpm, 4/4
+1 sections, dialect: absolute
+22 notes across piano (22)
+length 9.6s
+midi  /home/eileen/projects/plainsong-mcp/.plainsong/workspace/output/inline.mid

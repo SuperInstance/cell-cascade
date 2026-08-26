@@ -1,0 +1,62 @@
+{
+  "session": "cortex-plug-190003-band",
+  "ok": true,
+  "score": "/home/eileen/projects/plainsong-mcp/.plainsong/workspace/ensemble/cortex-plug-190003-band/score.song",
+  "midi": "/home/eileen/projects/plainsong-mcp/.plainsong/workspace/ensemble/cortex-plug-190003-band/cortex-plug-190003-band.mid",
+  "audio": "",
+  "summary": {
+    "score": {
+      "title": "cortex-plug-190003 \u2014 what the organism wrote",
+      "key": "C",
+      "tempo": 100.0,
+      "meter": "4/4",
+      "dialect": "absolute",
+      "sections": 4,
+      "bars": 8,
+      "players": [
+        "bass",
+        "drums",
+        "piano"
+      ],
+      "errors": 0,
+      "warnings": 0
+    },
+    "arrangement": {
+      "tracks": [
+        {
+          "name": "bass",
+          "role": "player",
+          "instrument": "bass",
+          "program": 33,
+          "notes": 80
+        },
+        {
+          "name": "drums",
+          "role": "player",
+          "instrument": "drums",
+          "program": 0,
+          "notes": 140
+        },
+        {
+          "name": "piano",
+          "role": "player",
+          "instrument": "piano",
+          "program": 0,
+          "notes": 119
+        }
+      ],
+      "beats": 80.0,
+      "seconds": 48.0,
+      "notes": 339,
+      "lyrics": 0
+    },
+    "midi": "/home/eileen/projects/plainsong-mcp/.plainsong/workspace/ensemble/cortex-plug-190003-band/cortex-plug-190003-band.mid",
+    "elapsed": {
+      "parse": 0.002,
+      "arrange": 0.003,
+      "midi": 0.001
+    },
+    "diagnostics": []
+  },
+  "describe": "cortex-plug-190003 \u2014 what the organism wrote  --  C, 100 bpm, 4/4\n4 sections, dialect: absolute\n339 notes across bass (80), drums (140), piano (119)\nlength 48s\nmidi  /home/eileen/projects/plainsong-mcp/.plainsong/workspace/ensemble/cortex-plug-190003-band/cortex-plug-190003-band.mid"
+}

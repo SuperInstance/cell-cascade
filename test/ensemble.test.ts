@@ -15,7 +15,7 @@ import {
   parseChord, chordTones, spelledDegree, pcOfName, midiOfName,
   bassForBar, bassCellSheet, normalizeBassLine, BASS_FLOOR_MIDI, BASS_CEIL_MIDI,
   DRUM_STYLES, DRUM_FILLS, drumForBar, drumFill, drumCellSheet, drumSystemPrompt, normalizeDrumLine, DRUM_MAP,
-  stockFromBar, stockBarFor, arrangerSheet,
+  stockFromBar, stockBarFor, arrangerSheet, uniquifySections,
   defaultArrangerVoicings, loadArrangerVoicings, saveArrangerVoicings, mintArrangerVoicings,
   partContent, parseEnsembleWriteResult, normalizeToVoice,
 } from '../src/ensemble';
@@ -112,6 +112,20 @@ test('bassForBar: register locked to c1..b2 and lines glide', () => {
 
 test('bassForBar: unknown quality refuses (the cell escalates)', () => {
   assert.equal(bassForBar(parseChord('Cmaj7#11'), parseChord('Dm7'), null), null);
+});
+
+test('bassForBar: half-diminished walks the b5, not the P5 (kimi review regression)', () => {
+  const bar = bassForBar(parseChord('Bm7b5'), parseChord('E7b9'), midiOfName('e1'))!;
+  const slot2 = bar.notes[1].replace(/\d/, '');
+  assert.equal(slot2, 'f', 'Bm7b5\'s fifth is f (b5), not f#');
+  assert.equal(bar.notes[0].replace(/\d/, ''), 'b');
+});
+
+test('spelledDegree: sharp degrees parse; double-spells refuse the grammar (kimi review regression)', () => {
+  const c = parseChord('Cmaj7');
+  assert.equal(spelledDegree(c, '#4')!.name, 'f#');
+  assert.equal(spelledDegree(c, '#11')!.name, 'f#');
+  assert.equal(spelledDegree(c, 'bb7'), null, 'double-flat refuses (outside the single-accidental grammar)');
 });
 
 test('bassCellSheet: the table holds every known quality, misses novelty', () => {
@@ -405,6 +419,14 @@ test('firing journey: the arranger (differentiated) misses → escalation mints 
   assert.ok(g7Now.hit && (g7Now.response as Record<string, unknown>).serve === 'table', 'the grown rule serves the next G7 at cost 0');
 });
 
+test('firing journey: a COLD differentiated cell (empty table) escalates too — the empty table is the maximal hole (v0.5)', async () => {
+  const ctx = memStore({ model: { provider: 'openai-compatible', model: 'glm-5.3', system_prompt: 'BANDLEADER', max_tokens: 1024 } });
+  ctx.addCell('cold-arranger', 'differentiated', { organ: 'the chart, unborn' });   // no rules at all
+  const r = await fireSignal(ctx.store, { from: 'clock', to: 'cold-arranger', kind: 'arrange', payload: { chord: 'Dm7' } }, { now: 1, threshold: 5 });
+  assert.equal(r.mode, 'escalated', 'the germ line answers while the table is unborn');
+  assert.equal(ctx.candidates.length, 1, 'and the hole is recorded — the mint\'s first ore');
+});
+
 // ── the ensemble session wire ──────────────────────────────────────────────
 
 test('partContent: one row per declared section, mean dynamics, one voice per part', () => {
@@ -424,6 +446,18 @@ test('partContent: one row per declared section, mean dynamics, one voice per pa
   assert.ok(content.includes('vel: 67'), 'mean dynamics of section B (64+70 → 67)');
   const row = lines[1];
   assert.equal((row.match(/\|/g)?.length ?? 0), 3, 'one row: bar slots joined between two pipes + vel');
+});
+
+test('uniquifySections: the form\'s repeats get numbered (AABA → A, A2, B, A3)', () => {
+  const lib = planLibretto({ bars: 8, form: 'AABA' });
+  const u = uniquifySections(lib.sections);
+  assert.deepEqual(u.map(s => s.name), ['A', 'A2', 'B', 'A3']);
+  assert.deepEqual(u.map(s => s.bars), lib.sections.map(s => s.bars), 'spans unchanged');
+  // the part mirrors the uniquified form — every header unique
+  const content = partContent(u, 'bass', Array.from({ length: 8 }, (_, i) => `@bass | c${1 + (i % 2)} . g${1 + (i % 2)} . c${2 - (i % 2)} . e${1 + (i % 2)} . | vel: 6${i}`));
+  const headers = content.split('\n').filter(l => l.startsWith('['));
+  assert.deepEqual(headers, ['[A]', '[A2]', '[B]', '[A3]']);
+  assert.equal(new Set(headers).size, 4, 'the merge is deterministic on unique names');
 });
 
 test('parseEnsembleWriteResult: accepted, rebase-refused, and prose-garbage shapes', () => {

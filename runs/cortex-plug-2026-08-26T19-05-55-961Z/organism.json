@@ -1,0 +1,91 @@
+{
+  "organism": "cortex-plug-190555",
+  "zygote": "c_633472ed",
+  "metronome": "c_bb5fe5f3",
+  "bandleader": "c_d1583b71",
+  "critic": "c_9951aa54",
+  "librettist": "c_8d09c9bd",
+  "arranger": "c_017dc05c",
+  "bass": "c_000fb13f",
+  "drums": "c_3672fad3",
+  "ensemble_session": "cortex-plug-190555-band",
+  "every": 4,
+  "changes": [
+    "Dm7",
+    "G7",
+    "Cmaj7",
+    "A7b9",
+    "Fmaj7",
+    "Bbmaj7",
+    "E7b9",
+    "A7"
+  ],
+  "model": "glm-5.3",
+  "critic_model": "glm-5.3",
+  "gan_rounds": 2,
+  "ensemble": true,
+  "libretto": {
+    "form": "AABA",
+    "sections": [
+      {
+        "name": "A",
+        "bars": 2,
+        "tension_target": 0.583,
+        "role": "the statement"
+      },
+      {
+        "name": "A",
+        "bars": 2,
+        "tension_target": 0.7,
+        "role": "the restate — build on it"
+      },
+      {
+        "name": "B",
+        "bars": 2,
+        "tension_target": 0.7,
+        "role": "the bridge — lean in"
+      },
+      {
+        "name": "A",
+        "bars": 2,
+        "tension_target": 0.583,
+        "role": "the return — settle"
+      }
+    ],
+    "narrative": "a 8-bar AABA: the statement opens spare, the arc peaks at bar 4 where the harmony leans in, and the last section settles the piece home"
+  },
+  "gate_bands": {
+    "version": 3,
+    "path": "gate/gate-bands.json"
+  },
+  "arranger_voicings": {
+    "version": 2,
+    "held": 4
+  },
+  "intent": {
+    "note_density": {
+      "lo": 0.15,
+      "hi": 0.6
+    },
+    "syncopation": {
+      "lo": 0.2,
+      "hi": 1
+    },
+    "register_spread": {
+      "lo": 0.05,
+      "hi": 0.25
+    },
+    "rest_ratio": {
+      "lo": 0,
+      "hi": 0.3
+    },
+    "harmonic_tension": {
+      "lo": 0.15,
+      "hi": 0.763
+    },
+    "interval_size": {
+      "lo": 0,
+      "hi": 0.65
+    }
+  }
+}
