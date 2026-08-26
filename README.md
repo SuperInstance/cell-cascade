@@ -132,6 +132,24 @@ Local: `npm run db:migrate:local && npm run dev` then `npm run seed`
 
 Optional: set `MYELIN_THRESHOLD` as a Worker var to demo faster promotion.
 
+## THE CORTEX PLUG (v0.2.x) — the organism writes a tune
+
+The seam, closed end to end: a **sclerotic metronome** (rule table, cost 0)
+keeps time; every Nth tick its table says *compose*; the signal fires at a
+**totipotent bandleader** whose `sheet.model.system_prompt` is a frozen
+plainsong-notation contract; the model answers **through the v0.2 seam**
+(tokens/latency/cost logged on the signal); the driver accumulates the bars
+and the **plainsong MCP** (`compile_score`) renders them to MIDI. Real run,
+no human in the loop: 32 ticks, 7 bars, 10.7k tokens of GLM-5.3.
+
+```bash
+npm run cortex:plug   # WORKER_URL + PLAINSONG_MCP + .dev.vars MODEL_* — see docs/cortex-plug.md
+```
+
+Wiring diagram, the bars the organism wrote, and the v0.3 needs (critic
+cell, compositional memory, distillation of the cortex, real-time spine,
+ensemble): **[docs/cortex-plug.md](docs/cortex-plug.md)**.
+
 ## The seeded examples (real experiments, 2026-08-25)
 
 `npm run seed` loads `examples/seed.json` — each row lands in the `examples`

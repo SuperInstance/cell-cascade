@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts",
     "seed": "tsx scripts/seed.ts",
+    "cortex:plug": "tsx scripts/cortex_plug.ts",
     "db:create": "wrangler d1 create cell-cascade-db",
     "db:migrate:local": "wrangler d1 execute cell-cascade-db --file schema.sql --local",
     "db:migrate:remote": "wrangler d1 execute cell-cascade-db --file schema.sql --remote",
