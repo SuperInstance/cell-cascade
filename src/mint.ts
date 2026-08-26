@@ -552,7 +552,10 @@ export function renderMintRecord(r: MintRecord): string {
       lines.push(`    - \`${e.run}/tick-log.jsonl:${e.line}\` tick ${e.tick} · ${e.channel} ${e.value} → seam ${e.severity}`);
     }
   }
-  for (const x of r.rejected) lines.push(`- ✗ ${x.kind} ${x.channel}/${x.side} NOT minted — ${x.reason}`);
+  for (const x of r.rejected) {
+    if (x.kind.endsWith('·confirm')) lines.push(`- ✓ CONFIRM ${x.channel}/${x.side} — ${x.reason}`);
+    else lines.push(`- ✗ ${x.kind} ${x.channel}/${x.side} NOT minted — ${x.reason}`);
+  }
   for (const s of r.skipped) lines.push(`- … ${s.channel}/${s.side}: ${s.rationale}`);
   return lines.join('\n');
 }

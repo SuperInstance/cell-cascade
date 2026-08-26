@@ -64,9 +64,12 @@ function kimiJudger(pattern: MintPattern): Promise<{ verdict: 'approve' | 'rejec
       return resolve({ verdict: 'unavailable', note: `kimi unavailable (${r.error?.message ?? `exit ${r.status}`})` });
     }
     const out = r.stdout.trim();
-    const first = out.split(/\s+/)[0]?.toUpperCase().replace(/[^A-Z]/g, '') ?? '';
-    if (first.startsWith('SOUND') && !first.startsWith('UNSOUND')) resolve({ verdict: 'approve', note: out.slice(0, 200) });
-    else if (first.startsWith('UNSOUND')) resolve({ verdict: 'reject', note: out.slice(0, 200) });
+    // kimi may open with a bullet/dash or a stray word before the verdict —
+    // scan the first line or two for the leading verdict token
+    const head = out.replace(/^[^A-Za-z]+/, '').slice(0, 120).toUpperCase();
+    const first = head.split(/\s+/)[0] ?? '';
+    if (first.startsWith('UNSOUND')) resolve({ verdict: 'reject', note: out.slice(0, 200) });
+    else if (first.startsWith('SOUND')) resolve({ verdict: 'approve', note: out.slice(0, 200) });
     else resolve({ verdict: 'unavailable', note: `kimi answered without SOUND/UNSOUND: ${out.slice(0, 120)}` });
   });
 }
@@ -136,18 +139,19 @@ async function main(): Promise<void> {
     return;
   }
 
+  // the mint log remembers EVERY pass — mints, confirms, and empty passes
+  // alike — each with its evidence; the gate file itself only ever gains a
+  // version when a band actually moves.
+  if (!existsSync(LOG_PATH)) writeFileSync(LOG_PATH, '# THE MINT LOG — every band the gate grew, and its evidence\n');
+  appendFileSync(LOG_PATH, '\n' + renderMintRecord(record) + '\n');
+
   if (record.applied.length) {
     writeGateBands(GATE_PATH, next);
-    if (!existsSync(LOG_PATH)) writeFileSync(LOG_PATH, '# THE MINT LOG — every band the gate grew, and its evidence\n');
-    appendFileSync(LOG_PATH, '\n' + renderMintRecord(record) + '\n');
     log(`├─ MINTED: gate v${next.version} — ${record.applied.length} band(s) moved`);
     log(`├─ mint log: ${LOG_PATH}`);
     log('╰─ reversible: npm run mint:bands -- --rollback');
   } else {
-    log('╰─ nothing minted (proposals rejected or empty) — gate version unchanged');
-    if (record.rejected.length || record.skipped.length) {
-      log(renderMintRecord(record));
-    }
+    log('╰─ nothing moved this pass — confirms and conflicts recorded in the mint log');
   }
 }
 
