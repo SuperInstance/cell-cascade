@@ -26,6 +26,7 @@ import {
   criticSheet, criticIntent, composeCycle, traceFromReport,
   type CriticIntent, type SteeringHints, type TraceBar,
 } from '../src/critic';
+import { loadGateBands } from '../src/mint';
 
 const env = process.env;
 const WORKER_URL = (env.WORKER_URL ?? 'http://localhost:8787').replace(/\/+$/, '');
@@ -47,8 +48,16 @@ const CRITIC_MODEL = env.CRITIC_MODEL ?? MODEL;
 // 2 = compose → critique → recompose-if-wounded; the default). Round 2 only
 // fires when the critic says REVISE — a bar that stands saves a model call.
 const GAN_ROUNDS = Math.max(1, Math.min(4, Number(env.GAN_ROUNDS ?? 2)));
+// v0.4: the standing gate — gate/gate-bands.json is what the mint grew.
+// The frozen gate loads it at startup; env INTENT (operator override)
+// still wins per channel, so experiments can run above the minted canon.
+const GATE_PATH = env.GATE_BANDS ?? 'gate/gate-bands.json';
+const gateFile = loadGateBands(GATE_PATH);
 const INTENT: CriticIntent = (() => {
-  try { return criticIntent(env.INTENT ? JSON.parse(env.INTENT) : {}); } catch { return criticIntent(); }
+  const standing = gateFile ? gateFile.bands : {};
+  let override: Partial<CriticIntent> = {};
+  try { override = env.INTENT ? JSON.parse(env.INTENT) : {}; } catch { override = {}; }
+  return criticIntent({ ...standing, ...override });
 })();
 const ORG = env.ORGANISM ?? `cortex-plug-${new Date().toISOString().slice(11, 19).replace(/:/g, '')}`;
 const RUNS = env.RUNS_DIR ?? 'runs';
@@ -99,6 +108,7 @@ async function main(): Promise<void> {
   log(`╭─ THE CORTEX PLUG — ${ORG}`);
   log(`├─ worker ${WORKER_URL} · mcp ${MCP_URL}`);
   log(`├─ ${TICKS} ticks · compose every ${EVERY} · changes [${CHANGES.join(' → ')}] · ${BARS_PER} bar(s) per compose`);
+  log(`├─ the gate: ${gateFile ? `v${gateFile.version} (${GATE_PATH}, ${gateFile.history.length} mint record(s))` : `v0 calibrated defaults (no ${GATE_PATH})`}${env.INTENT ? ' · operator INTENT override active' : ''}`);
 
   // ── 0. both organs must be alive before anything grows ─────────────────
   const workerAlive = await fetch(`${WORKER_URL}/health`).then(r => r.ok).catch(() => false);
@@ -125,7 +135,7 @@ async function main(): Promise<void> {
     tier: 'multipotent', sheet_patch: criticSheet({ model: CRITIC_MODEL }),
   });
   const metroId = metro.child.id, bandId = band.child.id, criticId = critic.child.id;
-  writeFileSync(join(runDir, 'organism.json'), JSON.stringify({ organism: ORG, zygote, metronome: metroId, bandleader: bandId, critic: criticId, every: EVERY, changes: CHANGES, model: MODEL, critic_model: CRITIC_MODEL, gan_rounds: GAN_ROUNDS }, null, 2));
+  writeFileSync(join(runDir, 'organism.json'), JSON.stringify({ organism: ORG, zygote, metronome: metroId, bandleader: bandId, critic: criticId, every: EVERY, changes: CHANGES, model: MODEL, critic_model: CRITIC_MODEL, gan_rounds: GAN_ROUNDS, gate_bands: { version: gateFile?.version ?? 0, path: gateFile ? GATE_PATH : null }, intent: INTENT }, null, 2));
   log(`├─ organism grown: zygote ${zygote} · metronome(sclerotic) ${metroId} · bandleader(totipotent) ${bandId} · critic(multipotent) ${criticId}`);
 
   // ── 2. the clock turns; the tissue works ───────────────────────────────
@@ -212,6 +222,26 @@ async function main(): Promise<void> {
       if (servedRounds.length > 1) revisions++; else earlyAccepts++;
       acceptedVia[cycle.acceptedVia] = (acceptedVia[cycle.acceptedVia] ?? 0) + 1;
       carriedSteering = cycle.steering;   // the critique feeds the NEXT compose payload
+      // v0.4: the MINT'S ORE — every judged band reading lands in the
+      // ledger with its provenance. The mint pass scans these `gate` lines;
+      // repeated same-direction verdicts grow the gate's bands.
+      for (const r of cycle.rounds) {
+        if (!r.critique) continue;
+        const evidence = r.critique.observations
+          .filter(o => o.kind === 'band')
+          .map(o => ({
+            channel: o.channel, side: o.value < (o.target_lo ?? 0) ? 'low' : 'high',
+            bar: o.bar ?? null, value: Math.round(o.value * 1000) / 1000,
+            target_lo: o.target_lo, target_hi: o.target_hi,
+            judged: o.note.startsWith('seam:') ? 'seam' : 'gate',
+            severity: o.severity,
+            resolved: !o.note.includes('gray zone') || o.note.startsWith('seam:'),
+            accepted: r.accepted,
+          }));
+        if (evidence.length) {
+          jlog({ gate: true, tick, compose: barIndex, round: r.round, serve: r.serve, verdict: r.critique.verdict, gate_version: gateFile?.version ?? 0, evidence });
+        }
+      }
       log(`├─ tick ${String(tick).padStart(2)} · downbeat → compose ${String(barIndex).padStart(2)} (${String(CHANGES[barIndex % CHANGES.length]).padEnd(5)}) · ${servedRounds.length} round(s) · critic: ${final.critique?.verdict ?? 'unheard'} · accepted: ${cycle.acceptedVia}${final.seamFailed ? ' (seam answer unusable — the cheap verdict stood)' : ''}`);
       for (const r of servedRounds) {
         log(`│   r${r.round}${r.critique ? ` [${r.critique.verdict}${r.serve !== 'none' ? ` · ${r.serve}` : ''}]${r.accepted ? ' ✓' : ''}` : ' [ear unavailable]'}`);
@@ -263,6 +293,7 @@ async function main(): Promise<void> {
     gan: {
       rounds_configured: GAN_ROUNDS,
       accepted_via: acceptedVia,
+      gate_bands: { version: gateFile?.version ?? 0, path: gateFile ? GATE_PATH : null, standing: gateFile?.bands ?? null, intent_run: INTENT },
       critique_serve: {
         critiques, cheap: cheapServes, seam: seamServes, seam_failures: seamFailures,
         cheap_pct: critiques ? Math.round((cheapServes / critiques) * 1000) / 10 : null,
