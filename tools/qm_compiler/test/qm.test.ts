@@ -140,3 +140,21 @@ test('round-trip unheard-duke: deterministic tendencies round-trip as facts', ()
   assert.deepEqual(facts.sheet_residue.surviving_tendencies, sheet.surviving_tendencies);
   assert.deepEqual(facts.sheet_residue.r3_verdict, sheet.r3_verdict);
 });
+
+test('escalation seam is declarative: differentiated cell links to nearest totipotent ancestor', () => {
+  const { program, errors } = compileOrganism({
+    organism: 'x',
+    cells: [
+      { id: 'root', name: 'r', tier: 'totipotent' },
+      { id: 'mid', name: 'm', tier: 'multipotent', from: 'root' },
+      { id: 'leaf', name: 'l', tier: 'differentiated', from: 'mid',
+        sheet: { rules: [{ when: { kind: 'q' }, respond: { a: 1 } }] } },
+    ],
+  });
+  assert.equal(errors.length, 0);
+  assert.deepEqual(program.escalations, { leaf: 'root' });
+  assert.ok(program.ops.some((o) => o.op === 'link' && o.from === 'leaf' && o.to === 'root' && o.type === 'escalate'));
+  // and the real seed: duke-pianist (differentiated) escalates to glm5.3
+  const duke = compileOrganism(seeds.find((s: any) => s.id === 'unheard-duke').seed);
+  assert.deepEqual(duke.program.escalations, { 'duke-pianist': 'glm5.3' });
+});

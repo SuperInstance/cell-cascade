@@ -219,5 +219,6 @@
   "routes": {
     "nod": "cue-ack",
     "trade": "cue-ack"
-  }
+  },
+  "escalations": {}
 }

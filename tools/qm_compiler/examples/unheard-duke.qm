@@ -126,6 +126,12 @@
       "from": "glm5.3",
       "to": "duke-pianist",
       "type": "signal:critique-round"
+    },
+    {
+      "op": "link",
+      "from": "duke-pianist",
+      "to": "glm5.3",
+      "type": "escalate"
     }
   ],
   "views": [
@@ -162,5 +168,8 @@
   ],
   "routes": {
     "critique-round": "duke-pianist"
+  },
+  "escalations": {
+    "duke-pianist": "glm5.3"
   }
 }

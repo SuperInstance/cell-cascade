@@ -79,6 +79,8 @@ export interface QmProgram {
   views: QmView[];
   /** signal routing compiled from myelin paths: kind -> target cell */
   routes: Record<string, string>;
+  /** declarative model seam: differentiated cell -> its totipotent ancestor */
+  escalations: Record<string, string>;
 }
 
 export interface CompileError { code: 'DANGLING_LINK' | 'DUPLICATE_CELL' | 'RULE_NOT_OBJECT'; detail: string }
@@ -159,6 +161,29 @@ export function compileOrganism(seed: OrganismSeed): { program: QmProgram; error
     routes[m.kind] = m.to;
   }
 
+  // Declarative escalation seam: a DIFFERENTIATED cell's rule-table miss
+  // escalates to its nearest totipotent ancestor (firing.ts semantics).
+  // Compiled as a link, not an opcode — WHERE misses go is part of the
+  // organism's observable contract; HOW the model is called stays runtime.
+  const byId = new Map(seed.cells.map((c) => [c.id, c]));
+  const escalations: Record<string, string> = {};
+  for (const c of seed.cells) {
+    if (c.tier !== 'differentiated') continue;
+    let cur = c.from ?? null;
+    const seen = new Set<string>([c.id]);
+    while (cur && !seen.has(cur)) {
+      seen.add(cur);
+      const p = byId.get(cur);
+      if (!p) break;
+      if (p.tier === 'totipotent') {
+        ops.push({ op: 'link', from: c.id, to: cur, type: 'escalate' });
+        escalations[c.id] = cur;
+        break;
+      }
+      cur = p.from ?? null;
+    }
+  }
+
   // EFFECT: rules -> guarded effects on the response slot (sheet order)
   for (const c of seed.cells) {
     for (const rule of c.sheet?.rules ?? []) {
@@ -175,7 +200,7 @@ export function compileOrganism(seed: OrganismSeed): { program: QmProgram; error
     }
   }
 
-  return { program: { format: 'qm', version: 1, organism: seed.organism, ops, views, routes }, errors };
+    return { program: { format: 'qm', version: 1, organism: seed.organism, ops, views, routes, escalations }, errors };
 }
 
 /** Gate-math compilation for critic sheets (seamstress-eye): a guarded

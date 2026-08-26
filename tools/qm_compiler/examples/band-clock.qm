@@ -172,5 +172,6 @@
   ],
   "routes": {
     "bar-tick": "do-alarm"
-  }
+  },
+  "escalations": {}
 }
