@@ -266,9 +266,19 @@ numbers — if the evidence drifts, the build says so.
 
 ```bash
 npm test         # node:test via tsx — ladder, myelin math, rule table,
-                 # lineage/wound healing, health metrics, seed validation
+                 # lineage/wound healing, health metrics, seed validation,
+                 # reflex-arc gate export (µ-grid exactness, sha provenance)
 npm run typecheck
 ```
+
+## reflex-arc — the gate on metal (2026-08-26)
+
+The frozen gate's bands export integer-only to the ESP32-S3 (`npm run
+export:gateqm` → `critic-gate.qm`, micro-units, sha256 receipt) and replayed
+against `cheapCritique` on 500 real critique vectors — 100% agreement, zero
+divergences. One finding filed (ledger granularity). Details, failures
+first: [docs/reflex-arc-export.md](docs/reflex-arc-export.md); metal side:
+quilt-esp32 branch `reflex-arc`.
 
 ## Where this points
 

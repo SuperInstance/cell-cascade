@@ -1,0 +1,145 @@
+{
+  "format": "qm",
+  "version": 1,
+  "organism": "critic-gate",
+  "ops": [
+    {
+      "op": "bind",
+      "target": "critic-root",
+      "value": {
+        "name": "critic-root",
+        "tier": "totipotent",
+        "role": "minimal spine — no rules, escalation target of record",
+        "rule_count": 0
+      }
+    },
+    {
+      "op": "bind",
+      "target": "critic-root:facts",
+      "value": {
+        "name": "critic-root",
+        "tier": "totipotent",
+        "role": "minimal spine — no rules, escalation target of record",
+        "rule_count": 0
+      }
+    },
+    {
+      "op": "bind",
+      "target": "critic-root:response",
+      "value": null
+    },
+    {
+      "op": "bind",
+      "target": "critic-gate",
+      "value": {
+        "name": "critic-gate",
+        "tier": "sclerotic",
+        "role": "the frozen ear — 6-channel band gate, integer micro-units, cost 0",
+        "cost_per_call": 0,
+        "latency_ns": 0,
+        "rule_count": 6
+      }
+    },
+    {
+      "op": "bind",
+      "target": "critic-gate:facts",
+      "value": {
+        "gate_version": 3,
+        "source": "gate/gate-bands.json",
+        "source_sha256": "9c896bb021e87b782c6a00121af830db9f86d9ded49ba6b3e6c35c4213a7e3e4",
+        "exported_at": "2026-08-26T21:46:10.721Z",
+        "fixed_point": {
+          "format": "micro-units: signed 32-bit integers, 1 unit = 1e-6",
+          "scale": 1000000,
+          "why_not_q16_16": "bands and the gray zone are decimal (0.06, 0.763) — exact on the 1e-6 grid, inexact in Q16.16 (±2.4e-6 at the edges)",
+          "ambiguity_band": 60000,
+          "penalty": {
+            "ok": 0,
+            "warn": 400000,
+            "bad": 1000000
+          },
+          "revise_threshold": 1000000,
+          "dissent_epsilon": 20000
+        },
+        "channel_order": [
+          "note_density",
+          "syncopation",
+          "register_spread",
+          "rest_ratio",
+          "harmonic_tension",
+          "interval_size"
+        ],
+        "channels": [
+          {
+            "name": "note_density",
+            "lo": 150000,
+            "hi": 600000
+          },
+          {
+            "name": "syncopation",
+            "lo": 200000,
+            "hi": 1000000
+          },
+          {
+            "name": "register_spread",
+            "lo": 50000,
+            "hi": 250000
+          },
+          {
+            "name": "rest_ratio",
+            "lo": 0,
+            "hi": 300000
+          },
+          {
+            "name": "harmonic_tension",
+            "lo": 150000,
+            "hi": 763000
+          },
+          {
+            "name": "interval_size",
+            "lo": 0,
+            "hi": 650000
+          }
+        ],
+        "severity_rules": [
+          "bad:  v < lo - ambiguity_band or v > hi + ambiguity_band",
+          "warn: else v < lo or v > hi   (the gray zone — seam territory)",
+          "ok:   lo <= v <= hi"
+        ],
+        "scope": "6-channel band gate only; voice-leading / tension-curve / arc checks are desktop cross-bar tissue and stay off-metal (pre-registered)"
+      }
+    },
+    {
+      "op": "bind",
+      "target": "critic-gate:response",
+      "value": null
+    },
+    {
+      "op": "link",
+      "from": "critic-gate",
+      "to": "critic-root",
+      "type": "lineage"
+    }
+  ],
+  "views": [
+    {
+      "name": "critic-gate/facts",
+      "target": "critic-gate:facts",
+      "project": "facts"
+    },
+    {
+      "name": "critic-gate/response",
+      "target": "critic-gate:response",
+      "project": "response"
+    },
+    {
+      "name": "critic-root/response",
+      "target": "critic-root:response",
+      "project": "response"
+    }
+  ],
+  "routes": {
+    "critique": "critic-gate"
+  },
+  "escalations": {}
+}
