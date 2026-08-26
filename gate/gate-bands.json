@@ -1,0 +1,225 @@
+{
+  "version": 3,
+  "bands": {
+    "note_density": {
+      "lo": 0.15,
+      "hi": 0.6
+    },
+    "syncopation": {
+      "lo": 0.2,
+      "hi": 1
+    },
+    "register_spread": {
+      "lo": 0.05,
+      "hi": 0.25
+    },
+    "rest_ratio": {
+      "lo": 0,
+      "hi": 0.3
+    },
+    "harmonic_tension": {
+      "lo": 0.15,
+      "hi": 0.763
+    },
+    "interval_size": {
+      "lo": 0,
+      "hi": 0.65
+    }
+  },
+  "history": [
+    {
+      "version": 1,
+      "at": "2026-08-26T18:18:49.562Z",
+      "kind": "mint",
+      "scanned": [
+        "runs/cortex-plug-2026-08-26T05-16-17-333Z",
+        "runs/cortex-plug-2026-08-26T05-18-41-774Z",
+        "runs/cortex-plug-2026-08-26T15-46-17-061Z",
+        "runs/cortex-plug-2026-08-26T15-48-38-695Z",
+        "runs/cortex-plug-2026-08-26T15-53-25-519Z",
+        "runs/cortex-plug-2026-08-26T15-56-42-032Z",
+        "runs/cortex-plug-2026-08-26T15-58-09-924Z",
+        "runs/cortex-plug-2026-08-26T15-58-42-515Z",
+        "runs/cortex-plug-2026-08-26T17-51-59-137Z",
+        "runs/cortex-plug-2026-08-26T18-00-16-831Z",
+        "runs/cortex-plug-2026-08-26T18-03-30-813Z",
+        "runs/cortex-plug-2026-08-26T18-08-28-213Z",
+        "runs/cortex-plug-2026-08-26T18-10-34-901Z",
+        "runs/cortex-plug-2026-08-26T18-13-38-460Z"
+      ],
+      "lines_read": 367,
+      "evidence_lines": 13,
+      "evidence_points": 16,
+      "min_repeats": 2,
+      "applied": [
+        {
+          "kind": "loosen",
+          "channel": "harmonic_tension",
+          "side": "high",
+          "from": 0.75,
+          "to": 0.763,
+          "tested_edge": 0.68,
+          "rationale": "the seam blessed 2 gray reading(s) at harmonic_tension's high edge (extreme 0.703) — warned, but the organism stood the bars. Move the high edge to 0.763 so they sit inside the band: future identical readings judge clean at cost 0. The evidence tested an operator intent override ([0.15, 0.68]) — adopting into the standing band needs musical judgment.",
+          "evidence": [
+            {
+              "run": "runs/cortex-plug-2026-08-26T18-13-38-460Z",
+              "line": 19,
+              "tick": 9,
+              "channel": "harmonic_tension",
+              "value": 0.697,
+              "severity": "ok"
+            },
+            {
+              "run": "runs/cortex-plug-2026-08-26T18-13-38-460Z",
+              "line": 5,
+              "tick": 1,
+              "channel": "harmonic_tension",
+              "value": 0.703,
+              "severity": "warn"
+            }
+          ]
+        }
+      ],
+      "rejected": [
+        {
+          "channel": "note_density",
+          "side": "low",
+          "kind": "loosen·confirm",
+          "reason": "the seam blessed 2 gray reading(s) at note_density's low edge (extreme 0.313) — warned, but the organism stood the bars. The tested band was an operator override ([0.32, 0.6]) whose corrected low edge (0.253) sits inside the standing gate ([0.15, 0.6]) — the canon already sanctions a wider envelope. CONFIRM: no change."
+        },
+        {
+          "channel": "harmonic_tension",
+          "side": "high",
+          "kind": "loosen·confirm",
+          "reason": "the seam blessed 2 gray reading(s) at harmonic_tension's high edge (extreme 0.648) — warned, but the organism stood the bars. The tested band was an operator override ([0.15, 0.6]) whose corrected high edge (0.708) sits inside the standing gate ([0.15, 0.75]) — the canon already sanctions a wider envelope. CONFIRM: no change."
+        },
+        {
+          "channel": "harmonic_tension",
+          "side": "high",
+          "kind": "loosen",
+          "reason": "judged: APPROVED — • SOUND — sustained harmonic tension in the 0.70–0.76 range is idiomatic late-quartet vocabulary (Tyner-esque quartal voicings, Trane's late chromaticism), and a spare texture actually needs that tens",
+          "judgment": "• SOUND — sustained harmonic tension in the 0.70–0.76 range is idiomatic late-quartet vocabulary (Tyner-esque quartal voicings, Trane's late chromaticism), and a spare texture actually needs that tens"
+        }
+      ],
+      "skipped": [],
+      "snapshot": {
+        "note_density": {
+          "lo": 0.15,
+          "hi": 0.6
+        },
+        "syncopation": {
+          "lo": 0.2,
+          "hi": 1
+        },
+        "register_spread": {
+          "lo": 0.05,
+          "hi": 0.25
+        },
+        "rest_ratio": {
+          "lo": 0,
+          "hi": 0.3
+        },
+        "harmonic_tension": {
+          "lo": 0.15,
+          "hi": 0.763
+        },
+        "interval_size": {
+          "lo": 0,
+          "hi": 0.65
+        }
+      }
+    },
+    {
+      "version": 2,
+      "at": "2026-08-26T18:19:31.197Z",
+      "kind": "rollback",
+      "restored_from": 0,
+      "scanned": [],
+      "lines_read": 0,
+      "evidence_lines": 0,
+      "evidence_points": 0,
+      "min_repeats": 0,
+      "applied": [],
+      "rejected": [],
+      "skipped": [
+        {
+          "channel": "*",
+          "side": "*",
+          "rationale": "rollback — version 2 restores the bands of version 0; the mint that made 1 stays in history, reversible again"
+        }
+      ],
+      "snapshot": {
+        "note_density": {
+          "lo": 0.15,
+          "hi": 0.6
+        },
+        "syncopation": {
+          "lo": 0.2,
+          "hi": 1
+        },
+        "register_spread": {
+          "lo": 0.05,
+          "hi": 0.25
+        },
+        "rest_ratio": {
+          "lo": 0,
+          "hi": 0.3
+        },
+        "harmonic_tension": {
+          "lo": 0.15,
+          "hi": 0.75
+        },
+        "interval_size": {
+          "lo": 0,
+          "hi": 0.65
+        }
+      }
+    },
+    {
+      "version": 3,
+      "at": "2026-08-26T18:19:31.426Z",
+      "kind": "rollback",
+      "restored_from": 1,
+      "scanned": [],
+      "lines_read": 0,
+      "evidence_lines": 0,
+      "evidence_points": 0,
+      "min_repeats": 0,
+      "applied": [],
+      "rejected": [],
+      "skipped": [
+        {
+          "channel": "*",
+          "side": "*",
+          "rationale": "rollback — version 3 restores the bands of version 1; the mint that made 2 stays in history, reversible again"
+        }
+      ],
+      "snapshot": {
+        "note_density": {
+          "lo": 0.15,
+          "hi": 0.6
+        },
+        "syncopation": {
+          "lo": 0.2,
+          "hi": 1
+        },
+        "register_spread": {
+          "lo": 0.05,
+          "hi": 0.25
+        },
+        "rest_ratio": {
+          "lo": 0,
+          "hi": 0.3
+        },
+        "harmonic_tension": {
+          "lo": 0.15,
+          "hi": 0.763
+        },
+        "interval_size": {
+          "lo": 0,
+          "hi": 0.65
+        }
+      }
+    }
+  ]
+}

@@ -100,6 +100,24 @@ test('extractNotationBars: zero lines from prose-only (honest, no faking)', () =
   assert.equal(got.found, 0);
 });
 
+test('BARS_PER=2: one thought writes a two-bar window — extraction and prompt both speak it', () => {
+  const reply = [
+    'Two bars, as asked:',
+    '@piano | d3 . f3-c4 . . e4 . . | vel: 60',
+    '@piano | . d4 . b3 . f3-g3 . . | vel: 56',
+  ].join('\n');
+  const got = extractNotationBars(reply, 2);
+  assert.equal(got.lines.length, 2, 'the whole window survives');
+  assert.equal(got.rejected, 0);
+  // the payload carries the cycle\'s chords comma-joined (one per bar)
+  const p = composePayload({ barIndex: 0, changes: 'Dm7, G7', bars: 2 });
+  assert.equal(p.bars, 2);
+  assert.equal(p.changes, 'Dm7, G7');
+  // the prompt tells the bandleader how to read a multi-bar changes list
+  assert.ok(bandleaderSystemPrompt({}).includes('one'), 'multi-bar changes are named');
+  assert.ok(bandleaderSystemPrompt({}).includes('per bar in order'));
+});
+
 test('isBarLine accepts chords/rests/flats, rejects headers and chatter', () => {
   assert.ok(isBarLine('@piano | . e3-a3-d4-g4 . . . . e3-a3-d4-g4 g3 | vel: 70'));
   assert.ok(isBarLine('@bass | bb2 . f#3 . . c3 - - | vel: 55'));

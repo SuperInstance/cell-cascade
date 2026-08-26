@@ -1,0 +1,9 @@
+**TRACK: cortex-plug-v04f — what the organism wrote
+[MetaData]
+key: C | tempo: 100 | swing: 0% | subdivision: 8th
+time: 4/4
+
+[A] (what the organism wrote — no human in the loop)
+@piano | d3 . a3-c4-e4 . . g4 . bb3-e4 | vel: 82
+@piano | d4 . a3-c4-d4 . . a2 . g3-b3-f3 | vel: 80
+@piano | c3 . b3-e4 . . d5 . f#3-a3 | vel: 88

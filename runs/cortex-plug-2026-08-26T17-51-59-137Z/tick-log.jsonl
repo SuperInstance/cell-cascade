@@ -1,0 +1,29 @@
+{"tick":1,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":1}
+{"tick":1,"outline":0,"mode":"table","section":"A","arc":"peaking","tension_target":0.584,"latency_ms":1}
+{"tick":1,"compose":0,"round":1,"changes":"Dm7","mode":"model","ok":true,"tokens":1570,"latency_ms":12419,"steered":false,"answer_head":"@piano | d3-a3-c4 . . f4 . e4 . . | vel: 74"}
+{"tick":1,"critique":0,"round":1,"serve":"seam","mode":"model","ok":true,"verdict":"accept","latency_ms":25422}
+{"gate":true,"tick":1,"compose":0,"round":1,"serve":"seam","verdict":"accept","gate_version":0,"evidence":[{"channel":"note_density","side":"low","bar":1,"value":0.313,"target_lo":0.32,"target_hi":0.6,"judged":"seam","severity":"warn","resolved":true,"accepted":true}]}
+{"tick":2,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":2}
+{"tick":3,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":3}
+{"tick":4,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":4}
+{"tick":5,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":5}
+{"tick":5,"outline":1,"mode":"table","section":"A","arc":"peaking","tension_target":0.703,"latency_ms":1}
+{"tick":5,"compose":1,"round":2,"changes":"G7","mode":"model","ok":true,"tokens":3751,"latency_ms":44496,"steered":true,"answer_head":"@piano | . e4 . d4 d3-f3-b3 . ab4 . | vel: 86"}
+{"tick":5,"critique":1,"round":1,"serve":"cheap","mode":"table","ok":true,"verdict":"accept","latency_ms":1}
+{"tick":6,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":6}
+{"tick":7,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":7}
+{"tick":8,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":8}
+{"tick":9,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":9}
+{"tick":9,"outline":2,"mode":"table","section":"B","arc":"peaking","tension_target":0.703,"latency_ms":1}
+{"tick":9,"compose":2,"round":2,"changes":"Cmaj7","mode":"model","ok":true,"tokens":2843,"latency_ms":28386,"steered":true,"answer_head":"@piano | . g3-b3-e4 . a4 . f#4 . . | vel: 90"}
+{"tick":9,"critique":2,"round":1,"serve":"seam","mode":"model","ok":true,"verdict":"accept","latency_ms":18223}
+{"gate":true,"tick":9,"compose":2,"round":1,"serve":"seam","verdict":"accept","gate_version":0,"evidence":[{"channel":"note_density","side":"low","bar":1,"value":0.313,"target_lo":0.32,"target_hi":0.6,"judged":"seam","severity":"warn","resolved":true,"accepted":true}]}
+{"tick":10,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":10}
+{"tick":11,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":11}
+{"tick":12,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":12}
+{"tick":13,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":13}
+{"tick":13,"outline":3,"mode":"table","section":"B","arc":"settling","tension_target":0.584,"latency_ms":1}
+{"tick":13,"compose":3,"round":2,"changes":"A7b9","mode":"model-error","ok":false,"tokens":null,"latency_ms":2000,"steered":true,"answer_head":""}
+{"tick":14,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":14}
+{"tick":15,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":15}
+{"tick":16,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":16}

@@ -26,6 +26,8 @@ import {
   criticSheet, criticIntent, composeCycle, traceFromReport,
   type CriticIntent, type SteeringHints, type TraceBar,
 } from '../src/critic';
+import { loadGateBands } from '../src/mint';
+import { planLibretto, librettistSheet, outlineForBar, nudgeTargets, ARC_DRIFT_TOL } from '../src/librettist';
 
 const env = process.env;
 const WORKER_URL = (env.WORKER_URL ?? 'http://localhost:8787').replace(/\/+$/, '');
@@ -47,8 +49,16 @@ const CRITIC_MODEL = env.CRITIC_MODEL ?? MODEL;
 // 2 = compose → critique → recompose-if-wounded; the default). Round 2 only
 // fires when the critic says REVISE — a bar that stands saves a model call.
 const GAN_ROUNDS = Math.max(1, Math.min(4, Number(env.GAN_ROUNDS ?? 2)));
+// v0.4: the standing gate — gate/gate-bands.json is what the mint grew.
+// The frozen gate loads it at startup; env INTENT (operator override)
+// still wins per channel, so experiments can run above the minted canon.
+const GATE_PATH = env.GATE_BANDS ?? 'gate/gate-bands.json';
+const gateFile = loadGateBands(GATE_PATH);
 const INTENT: CriticIntent = (() => {
-  try { return criticIntent(env.INTENT ? JSON.parse(env.INTENT) : {}); } catch { return criticIntent(); }
+  const standing = gateFile ? gateFile.bands : {};
+  let override: Partial<CriticIntent> = {};
+  try { override = env.INTENT ? JSON.parse(env.INTENT) : {}; } catch { override = {}; }
+  return criticIntent({ ...standing, ...override });
 })();
 const ORG = env.ORGANISM ?? `cortex-plug-${new Date().toISOString().slice(11, 19).replace(/:/g, '')}`;
 const RUNS = env.RUNS_DIR ?? 'runs';
@@ -99,6 +109,7 @@ async function main(): Promise<void> {
   log(`╭─ THE CORTEX PLUG — ${ORG}`);
   log(`├─ worker ${WORKER_URL} · mcp ${MCP_URL}`);
   log(`├─ ${TICKS} ticks · compose every ${EVERY} · changes [${CHANGES.join(' → ')}] · ${BARS_PER} bar(s) per compose`);
+  log(`├─ the gate: ${gateFile ? `v${gateFile.version} (${GATE_PATH}, ${gateFile.history.length} mint record(s))` : `v0 calibrated defaults (no ${GATE_PATH})`}${env.INTENT ? ' · operator INTENT override active' : ''}`);
 
   // ── 0. both organs must be alive before anything grows ─────────────────
   const workerAlive = await fetch(`${WORKER_URL}/health`).then(r => r.ok).catch(() => false);
@@ -124,9 +135,22 @@ async function main(): Promise<void> {
     organism: ORG, name: 'critic', from_cell: zygote, role: 'the ear — judges the bars the bandleader wrote',
     tier: 'multipotent', sheet_patch: criticSheet({ model: CRITIC_MODEL }),
   });
+  // v0.4: THE LIBRETTIST — score-level memory, sclerotic tissue (the plan
+  // IS a rule table, cost 0). Holds form + tension arc + narrative; the
+  // driver tracks the cursor and lets the arc evolve (nudgeTargets).
+  const TOTAL_BARS = Math.max(1, Math.ceil(TICKS / EVERY)) * BARS_PER;
+  const libretto = planLibretto({ bars: TOTAL_BARS, form: env.FORM || undefined });
+  let arcTargets = [...libretto.tension_targets];
+  const realizedTensions: number[] = [];
+  const lib = await api<{ child: { id: string } }>('/cell', {
+    organism: ORG, name: 'librettist', from_cell: zygote, role: 'the plan — holds the form and the tension arc',
+    tier: 'sclerotic', sheet_patch: librettistSheet(libretto),
+  });
+  const libId = lib.child.id;
   const metroId = metro.child.id, bandId = band.child.id, criticId = critic.child.id;
-  writeFileSync(join(runDir, 'organism.json'), JSON.stringify({ organism: ORG, zygote, metronome: metroId, bandleader: bandId, critic: criticId, every: EVERY, changes: CHANGES, model: MODEL, critic_model: CRITIC_MODEL, gan_rounds: GAN_ROUNDS }, null, 2));
-  log(`├─ organism grown: zygote ${zygote} · metronome(sclerotic) ${metroId} · bandleader(totipotent) ${bandId} · critic(multipotent) ${criticId}`);
+  writeFileSync(join(runDir, 'organism.json'), JSON.stringify({ organism: ORG, zygote, metronome: metroId, bandleader: bandId, critic: criticId, librettist: libId, every: EVERY, changes: CHANGES, model: MODEL, critic_model: CRITIC_MODEL, gan_rounds: GAN_ROUNDS, libretto: { form: libretto.form, sections: libretto.sections, narrative: libretto.narrative }, gate_bands: { version: gateFile?.version ?? 0, path: gateFile ? GATE_PATH : null }, intent: INTENT }, null, 2));
+  log(`├─ organism grown: zygote ${zygote} · metronome(sclerotic) ${metroId} · bandleader(totipotent) ${bandId} · critic(multipotent) ${criticId} · librettist(sclerotic) ${libId}`);
+  log(`├─ the plan: ${libretto.form} over ${TOTAL_BARS} bars — ${libretto.narrative}`);
 
   // ── 2. the clock turns; the tissue works ───────────────────────────────
   const barLines: string[] = [];
@@ -144,14 +168,27 @@ async function main(): Promise<void> {
     jlog({ tick, beat: tp.beat, mode: fired.mode, action, latency_ms: fired.fired?.latency_ms, myelin: fired.myelin?.fire_count });
     if (fired.mode !== 'table') die(`tick ${tick}: metronome served "${fired.mode}" — the spine must be table tissue`);
     if (action === 'compose') {
-      const barIndex = composes;
+      // v0.4: BARS_PER > 1 amortizes compose latency — one thought writes a
+      // multi-bar window; bar_index advances by BARS_PER per served cycle,
+      // and `changes` spans the cycle's chords comma-joined (one per bar).
+      const barIndex = composes * BARS_PER;
+      const cycleChanges = Array.from({ length: BARS_PER }, (_, i) => CHANGES[(barIndex + i) % CHANGES.length]).join(', ');
       const recent = barLines.slice(-2);
+
+      // v0.4: consult the librettist — the outline signal serves the plan
+      // from sclerotic tissue (cost 0), and the driver merges the cursor.
+      const plan = await api<Fired>('/signal', { from: 'clock', to: libId, kind: 'outline', payload: { tick, bar: barIndex } });
+      const planMode = plan.mode;
+      const outline = outlineForBar(libretto, barIndex, arcTargets);
+      jlog({ tick, outline: barIndex, mode: planMode, section: outline.section, arc: outline.arc, tension_target: outline.tension_target, latency_ms: plan.fired?.latency_ms ?? null });
+      if (planMode !== 'table') log(`├─ ⚠ librettist served "${planMode}" (expected table) — the plan stands driver-side`);
 
       // v0.3: ONE COMPOSE CYCLE = up to GAN_ROUNDS rounds through the ear.
       // The loop lives in src/critic.ts (composeCycle); the driver supplies
       // only IO: the worker's /signal and the MCP's analyze_features.
       // Round 2+ fires only when the critic says revise — a bar that stands
       // on round 1 saves a model call (that is the tumor going down).
+      let lastTrace: TraceBar[] | null = null;   // realized tension for the arc controller
       const cycle = await composeCycle({
         fireCompose: async payload => {
           const thought = await api<Fired>('/signal', { from: metroId, to: bandId, kind: 'compose', payload });
@@ -190,13 +227,16 @@ async function main(): Promise<void> {
           }
           try {
             const trace = traceFromReport(JSON.parse(res.text));
-            return trace.slice(-candidate.length);
+            lastTrace = trace.slice(-candidate.length);
+            return lastTrace;
           } catch { analyzeFailures++; return null; }
         },
       }, {
-        barIndex, changes: CHANGES[barIndex % CHANGES.length], bars: BARS_PER,
+        barIndex, changes: cycleChanges, bars: BARS_PER,
         recent, intent: INTENT, steering: carriedSteering, ganRounds: GAN_ROUNDS,
         key: KEY, tempo: TEMPO,
+        outline: outline as unknown as Record<string, unknown>,
+        tensionTargets: arcTargets.slice(barIndex, barIndex + BARS_PER),
         extract: (reply, n) => extractNotationBars(reply, n).lines,
       });
 
@@ -212,6 +252,26 @@ async function main(): Promise<void> {
       if (servedRounds.length > 1) revisions++; else earlyAccepts++;
       acceptedVia[cycle.acceptedVia] = (acceptedVia[cycle.acceptedVia] ?? 0) + 1;
       carriedSteering = cycle.steering;   // the critique feeds the NEXT compose payload
+      // v0.4: the MINT'S ORE — every judged band reading lands in the
+      // ledger with its provenance. The mint pass scans these `gate` lines;
+      // repeated same-direction verdicts grow the gate's bands.
+      for (const r of cycle.rounds) {
+        if (!r.critique) continue;
+        const evidence = r.critique.observations
+          .filter(o => o.kind === 'band')
+          .map(o => ({
+            channel: o.channel, side: o.value < (o.target_lo ?? 0) ? 'low' : 'high',
+            bar: o.bar ?? null, value: Math.round(o.value * 1000) / 1000,
+            target_lo: o.target_lo, target_hi: o.target_hi,
+            judged: o.note.startsWith('seam:') ? 'seam' : 'gate',
+            severity: o.severity,
+            resolved: !o.note.includes('gray zone') || o.note.startsWith('seam:'),
+            accepted: r.accepted,
+          }));
+        if (evidence.length) {
+          jlog({ gate: true, tick, compose: barIndex, round: r.round, serve: r.serve, verdict: r.critique.verdict, gate_version: gateFile?.version ?? 0, evidence });
+        }
+      }
       log(`├─ tick ${String(tick).padStart(2)} · downbeat → compose ${String(barIndex).padStart(2)} (${String(CHANGES[barIndex % CHANGES.length]).padEnd(5)}) · ${servedRounds.length} round(s) · critic: ${final.critique?.verdict ?? 'unheard'} · accepted: ${cycle.acceptedVia}${final.seamFailed ? ' (seam answer unusable — the cheap verdict stood)' : ''}`);
       for (const r of servedRounds) {
         log(`│   r${r.round}${r.critique ? ` [${r.critique.verdict}${r.serve !== 'none' ? ` · ${r.serve}` : ''}]${r.accepted ? ' ✓' : ''}` : ' [ear unavailable]'}`);
@@ -263,6 +323,7 @@ async function main(): Promise<void> {
     gan: {
       rounds_configured: GAN_ROUNDS,
       accepted_via: acceptedVia,
+      gate_bands: { version: gateFile?.version ?? 0, path: gateFile ? GATE_PATH : null, standing: gateFile?.bands ?? null, intent_run: INTENT },
       critique_serve: {
         critiques, cheap: cheapServes, seam: seamServes, seam_failures: seamFailures,
         cheap_pct: critiques ? Math.round((cheapServes / critiques) * 1000) / 10 : null,
@@ -281,7 +342,9 @@ async function main(): Promise<void> {
       spine: `clock →(tick)→ ${metroId} [sclerotic · rule table · cost 0]`,
       cortex: `${metroId} →(compose)→ ${bandId} [totipotent · model seam · ${MODEL}]`,
       ear: `${bandId} →(critique)→ ${criticId} [multipotent · frozen gate cost 0 · seam ${CRITIC_MODEL} only on ambiguity]`,
-      loop: `compose → analyze_features → critique → steering → next compose payload (${GAN_ROUNDS} round cap)`,
+      plan: `clock →(outline)→ ${libId} [sclerotic · ${libretto.form} · tension arc · cost 0]`,
+      loop: `outline → compose → analyze_features → critique (bands + arc) → steering → next compose payload (${GAN_ROUNDS} round cap)`,
+      mint: `gate evidence lines → tick-log.jsonl → npm run mint:bands → gate-bands.json v${gateFile?.version ?? 0} (loaded at startup)`,
       hands: `driver accumulates bars → plainsong MCP compile_score → MIDI`,
     },
   };

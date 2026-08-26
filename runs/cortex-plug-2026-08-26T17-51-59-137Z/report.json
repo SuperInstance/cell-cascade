@@ -1,0 +1,167 @@
+{
+  "organism": "cortex-plug-v04a",
+  "run": "runs/cortex-plug-2026-08-26T17-51-59-137Z",
+  "ticks": 16,
+  "every": 4,
+  "bars_written": 3,
+  "composes_served": 3,
+  "compose_errors": 1,
+  "tokens": 12742,
+  "model_ms": 128946,
+  "table_ms": 16,
+  "changes": [
+    "Dm7",
+    "G7",
+    "Cmaj7",
+    "A7b9",
+    "Fmaj7",
+    "Bbmaj7",
+    "E7b9",
+    "A7"
+  ],
+  "model": "glm-5.3",
+  "compile": "cortex-plug-v04a — what the organism wrote  --  C, 100 bpm, 4/4",
+  "gan": {
+    "rounds_configured": 2,
+    "accepted_via": {
+      "verdict": 3
+    },
+    "gate_bands": {
+      "version": 0,
+      "path": null,
+      "standing": null,
+      "intent_run": {
+        "note_density": {
+          "lo": 0.32,
+          "hi": 0.6
+        },
+        "syncopation": {
+          "lo": 0.2,
+          "hi": 1
+        },
+        "register_spread": {
+          "lo": 0.05,
+          "hi": 0.25
+        },
+        "rest_ratio": {
+          "lo": 0,
+          "hi": 0.3
+        },
+        "harmonic_tension": {
+          "lo": 0.15,
+          "hi": 0.75
+        },
+        "interval_size": {
+          "lo": 0,
+          "hi": 0.65
+        }
+      }
+    },
+    "critique_serve": {
+      "critiques": 3,
+      "cheap": 1,
+      "seam": 2,
+      "seam_failures": 0,
+      "cheap_pct": 33.3,
+      "seam_pct": 66.7
+    },
+    "revision_rounds": 0,
+    "early_accepts": 3,
+    "analyze_failures": 0,
+    "intent": {
+      "note_density": {
+        "lo": 0.32,
+        "hi": 0.6
+      },
+      "syncopation": {
+        "lo": 0.2,
+        "hi": 1
+      },
+      "register_spread": {
+        "lo": 0.05,
+        "hi": 0.25
+      },
+      "rest_ratio": {
+        "lo": 0,
+        "hi": 0.3
+      },
+      "harmonic_tension": {
+        "lo": 0.15,
+        "hi": 0.75
+      },
+      "interval_size": {
+        "lo": 0,
+        "hi": 0.65
+      }
+    }
+  },
+  "health": {
+    "serve_modes_pct": {
+      "model": 18.5,
+      "table": 77.8,
+      "escalated": 0,
+      "model_required": 0,
+      "error": 3.7
+    },
+    "zero_cost_serve_pct": 74.1,
+    "cost_tumor": {
+      "threshold_pct": 5,
+      "totipotent_serve_pct": 11.1,
+      "window": 27,
+      "warning": true,
+      "note": "COST TUMOR: the germ line served 11.1% of the last 27 signals (> 5%) — the organism is leaning on its stem cells; differentiate dedicated tissue or grow rule tables from distillation candidates"
+    },
+    "serve_split": {
+      "window": 27,
+      "by_kind": {
+        "tick": {
+          "signals": 16,
+          "table": 16,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        },
+        "compose": {
+          "signals": 4,
+          "table": 0,
+          "model": 3,
+          "escalated": 0,
+          "error": 1,
+          "table_pct": 0,
+          "model_pct": 75
+        },
+        "outline": {
+          "signals": 4,
+          "table": 4,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        },
+        "critique": {
+          "signals": 3,
+          "table": 1,
+          "model": 2,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 33.3,
+          "model_pct": 66.7
+        }
+      },
+      "worst_offender": "compose",
+      "note": "serve split by kind: tick 100% table / 0% seam · compose 0% table / 75% seam · outline 100% table / 0% seam · critique 33.3% table / 66.7% seam — compose leans hardest on the seam (75%)"
+    }
+  },
+  "wiring": {
+    "spine": "clock →(tick)→ c_caa99f89 [sclerotic · rule table · cost 0]",
+    "cortex": "c_caa99f89 →(compose)→ c_4a3e40c1 [totipotent · model seam · glm-5.3]",
+    "ear": "c_4a3e40c1 →(critique)→ c_4164557a [multipotent · frozen gate cost 0 · seam glm-5.3 only on ambiguity]",
+    "plan": "clock →(outline)→ c_012d79e7 [sclerotic · AB · tension arc · cost 0]",
+    "loop": "outline → compose → analyze_features → critique (bands + arc) → steering → next compose payload (2 round cap)",
+    "mint": "gate evidence lines → tick-log.jsonl → npm run mint:bands → gate-bands.json v0 (loaded at startup)",
+    "hands": "driver accumulates bars → plainsong MCP compile_score → MIDI"
+  }
+}

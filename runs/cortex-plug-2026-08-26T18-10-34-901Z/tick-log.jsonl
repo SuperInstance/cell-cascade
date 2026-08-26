@@ -1,0 +1,31 @@
+{"tick":1,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":1}
+{"tick":1,"outline":0,"mode":"table","section":"A","arc":"peaking","tension_target":0.584,"latency_ms":1}
+{"tick":1,"compose":0,"round":1,"changes":"Dm7","mode":"model","ok":true,"tokens":1598,"latency_ms":12680,"steered":false,"answer_head":"@piano | d3-a3-c4-f4 . . e4 . d4 . c4 | vel: 76"}
+{"tick":1,"critique":0,"round":1,"serve":"cheap","mode":"table","ok":true,"verdict":"accept","latency_ms":1}
+{"tick":2,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":2}
+{"tick":3,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":3}
+{"tick":4,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":4}
+{"tick":5,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":5}
+{"tick":5,"outline":1,"mode":"table","section":"A","arc":"peaking","tension_target":0.703,"latency_ms":1}
+{"tick":5,"compose":1,"round":2,"changes":"G7","mode":"model","ok":true,"tokens":3438,"latency_ms":36928,"steered":true,"answer_head":"@piano | . g2-d3-f3-b3-e4 . f4 . a4 . g4 | vel: 86"}
+{"tick":5,"critique":1,"round":1,"serve":"cheap","mode":"table","ok":true,"verdict":"accept","latency_ms":1}
+{"tick":6,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":6}
+{"tick":7,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":7}
+{"tick":8,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":8}
+{"tick":9,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":9}
+{"tick":9,"outline":2,"mode":"table","section":"B","arc":"peaking","tension_target":0.703,"latency_ms":1}
+{"tick":9,"compose":2,"round":2,"changes":"Cmaj7","mode":"model","ok":true,"tokens":3186,"latency_ms":34705,"steered":true,"answer_head":"@piano | e3-b3-d4-f#4 . a4 . b4 . d5 . | vel: 92"}
+{"tick":9,"critique":2,"round":1,"serve":"cheap","mode":"table","ok":true,"verdict":"revise","latency_ms":1}
+{"tick":9,"compose":2,"round":2,"changes":"Cmaj7","mode":"model","ok":true,"tokens":3328,"latency_ms":32580,"steered":true,"answer_head":"@piano | . e3-b3-d4-a4 . g4 . f#4 . e4 | vel: 92"}
+{"tick":9,"critique":2,"round":2,"serve":"cheap","mode":"table","ok":true,"verdict":"accept","latency_ms":1}
+{"gate":true,"tick":9,"compose":2,"round":1,"serve":"cheap","verdict":"revise","gate_version":0,"evidence":[{"channel":"syncopation","side":"low","bar":1,"value":0,"target_lo":0.2,"target_hi":1,"judged":"gate","severity":"bad","resolved":true,"accepted":false}]}
+{"tick":10,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":10}
+{"tick":11,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":11}
+{"tick":12,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":12}
+{"tick":13,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":13}
+{"tick":13,"outline":3,"mode":"table","section":"B","arc":"settling","tension_target":0.584,"latency_ms":1}
+{"tick":13,"compose":3,"round":3,"changes":"A7b9","mode":"model","ok":true,"tokens":4037,"latency_ms":46586,"steered":true,"answer_head":"@piano | a2-e3-g3-c#4 . . e4 . bb4 a4 . | vel: 76"}
+{"tick":13,"critique":3,"round":1,"serve":"cheap","mode":"table","ok":true,"verdict":"accept","latency_ms":1}
+{"tick":14,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":14}
+{"tick":15,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":15}
+{"tick":16,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":16}

@@ -1,0 +1,64 @@
+{
+  "organism": "cortex-plug-v04g",
+  "zygote": "c_cdfa9042",
+  "metronome": "c_5bb08b41",
+  "bandleader": "c_e3c57fd7",
+  "critic": "c_0f770db5",
+  "librettist": "c_b63753f2",
+  "every": 4,
+  "changes": [
+    "Dm7",
+    "G7",
+    "Cmaj7",
+    "A7b9",
+    "Fmaj7",
+    "Bbmaj7",
+    "E7b9",
+    "A7"
+  ],
+  "model": "glm-5.3",
+  "critic_model": "glm-5.3",
+  "gan_rounds": 2,
+  "libretto": {
+    "form": "A",
+    "sections": [
+      {
+        "name": "A",
+        "bars": 2,
+        "tension_target": 0.656,
+        "role": "the statement"
+      }
+    ],
+    "narrative": "a 2-bar A: the statement opens spare, the arc peaks at bar 1 where the harmony leans in, and the last section settles the piece home"
+  },
+  "gate_bands": {
+    "version": 3,
+    "path": "gate/gate-bands.json"
+  },
+  "intent": {
+    "note_density": {
+      "lo": 0.15,
+      "hi": 0.6
+    },
+    "syncopation": {
+      "lo": 0.2,
+      "hi": 1
+    },
+    "register_spread": {
+      "lo": 0.05,
+      "hi": 0.25
+    },
+    "rest_ratio": {
+      "lo": 0,
+      "hi": 0.3
+    },
+    "harmonic_tension": {
+      "lo": 0.15,
+      "hi": 0.763
+    },
+    "interval_size": {
+      "lo": 0,
+      "hi": 0.65
+    }
+  }
+}

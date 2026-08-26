@@ -1,9 +1,113 @@
 # THE CORTEX PLUG — the first totipotent cell that composes
 
-*v0.3, 2026-08-26. The GAN loop is closed INSIDE the organism: the
-bandleader composes, a multipotent EAR judges the bars against a frozen
-feature gate at cost 0, and the critique steers the next compose payload.
-v0.2.x history below.*
+*v0.4, 2026-08-26. The gate grows itself: seam adjudications in the run
+ledger mint into versioned gate bands (evidence-cited, judger-signed,
+reversible), the LIBRETTIST holds the score-level plan, and one thought
+writes multi-bar windows. v0.3 history below.*
+
+## v0.4 — DISTILLATION MINTING + THE LIBRETTIST: the table grows itself
+
+```
+  runs/*/tick-log.jsonl ──gate evidence lines──► THE MINT PASS (npm run
+        (every judged band reading,               mint:bands) · scan → find
+         run:line provenance)                     repeated same-direction
+              │                                   verdicts → propose band
+              │                                   moves → kimi signs the
+              │                                   judgment calls
+              │                                        │
+              ▼                                        ▼
+      gate/gate-bands.json — VERSIONED (v1, v2, v3… every record cites its
+        │    evidence; rollback restores any snapshot as a NEW version)
+        │
+        └──► loaded at startup into the frozen gate's intent
+              (env INTENT still overrides per channel — experiments run
+               above the minted canon; override evidence can only CONFIRM
+               the canon or, if it corrects OUTWARD past it, adopt in —
+               and only with the judger's signature)
+```
+
+What shipped (`src/mint.ts`, `src/librettist.ts`, commits on `cortex-v04`):
+
+- **The evidence ledger** — the driver writes a `gate` line per compose
+  round: every judged band reading (channel, side, value, the band it was
+  judged against, judged-by gate/seam, severity, resolved, accepted),
+  each citing its run and line. This is the mint's ore.
+- **The mint pass** — three patterns: LOOSEN (the seam keeps blessing
+  gray readings → they become in-band, cost 0 forever), TIGHTEN (the
+  seam keeps damning what the gate only grays → the gate flags it
+  alone), RECALIBRATE (clear violations on bars the organism ACCEPTED →
+  bands follow measurement — judger-signed always). A seam-warn on a bar
+  the organism STOOD counts as blessed; a warn the cycle revised leans
+  only. Mixed verdicts on one edge are recorded as conflicts, never
+  minted. Mints creep (≤ 0.15/edge), never invert a band, cite every
+  evidence point, and are enforced AT THE APPLICATION POINT (an untrusted
+  pattern array cannot mint without evidence or past the walls).
+- **The judger** — seam-derived mints apply directly (the seam IS musical
+  judgment); adoptions of operator-override evidence into the standing
+  canon need a signature: `kimi -p` answers SOUND/UNSOUND. Kimi has
+  teeth — see the live evidence below.
+- **THE LIBRETTIST** (`src/librettist.ts`) — score-level memory as
+  sclerotic tissue (cost 0): the form (AABA over the bar count), a
+  rise-peak-release tension arc (one target per bar, clamped inside the
+  gate's band), a one-line narrative. `clock →(outline)→ librettist`
+  serves the plan; the compose payload carries `outline` (the prompt
+  binds it); the critic's tension-curve check consumes the same targets
+  (the outline's first consumer — live in run v04b: "outline arc: bar 1
+  reads 0.721 vs target 0.584" steered round 2 clean). The arc EVOLVES:
+  realized-tension drift beyond ±0.1 nudges the remaining targets toward
+  the music (form is fate, the arc breathes).
+- **BARS_PER=2** — bar_index advances per window, `changes` carries the
+  cycle's chords comma-joined (one per bar), extraction keeps N bars.
+
+### The evidence (real runs, 2026-08-26 ~17:51–18:19 UTC — GLM-5.3 + K3)
+
+Six runs, 16 evidence points, one REAL MINT and one REAL REFUSAL:
+
+- **v04a** (`INTENT note_density lo .32`, tightened): the bandleader's
+  spare .313 bars went gray twice; the seam warned, the organism stood
+  them — 2 blessings → corrected edge .253 — but the standing gate's .15
+  floor already sanctions more: **CONFIRM, no change.** The canon held.
+- **v04b** (leapy style, default intent): interval_size .717 caught CLEAR
+  by the gate at cost 0, steered clean round 2; a syncopation gray-low
+  (.167) blessed-but-stood once (1 repeat — below threshold, honestly
+  unminted). The arc check fired live and steered.
+- **v04c** (`INTENT harmonic_tension hi .6`): two gray-high .648 readings
+  blessed → corrected .708 < standing .75 → **CONFIRM.**
+- **v04d/v04e** (default intent): 100% cost-0 clean runs — the calibrated
+  canon reads the organism's own writing clean.
+- **v04f** (`INTENT harmonic_tension hi .68`, GAN_ROUNDS=1): three seam
+  critiques — .697 judged **ok**, .703 warned-but-stood → corrected
+  edge **.763 sits OUTSIDE the standing .75** → outward adoption →
+  **kimi's call.** First pass: kimi said **UNSOUND — "jumping to 0.763
+  admits too much"** (greedy math, wise musician — refusal recorded with
+  evidence). Second pass: kimi signed it — "**SOUND** — sustained tension
+  in 0.70–0.76 is idiomatic late-quartet vocabulary (Tyner-esque quartal
+  voicings…)". **GATE v1 MINTED: harmonic_tension hi .75 → .763**, every
+  point cited (`runs/…v04f/tick-log.jsonl:5,19`).
+- **Reversibility, live**: `--rollback` → v2 restored the v0 defaults;
+  `--rollback 1` → v3 restored the mint — three history records, nothing
+  destroyed, no kimi re-roll needed.
+- **v04g**: startup under the minted gate — `the gate: v3 (3 mint
+  record(s))` — 2 bars, **100% cost-0 critiques.** Loop closed: ledger →
+  mint → versioned gate → loaded at startup → clean run.
+
+The opencode review pass (glm-5.3) hardened the mint before it touched
+the canon: adoption direction guards (a correction inside the standing
+envelope CONFIRMS, never shrinks), application-point enforcement (no
+  evidence → no mint; creep/inversion refused), provenance grouping
+  (override evidence never pools with standing-band evidence), NaN
+  refusal, ghost-section elimination. 139/139 tests green (111 v0.3 +
+  28 new: mint patterns, apply/rollback journeys, confirm semantics,
+  libretto/arc/controller, BARS_PER extraction).
+
+Run the loop yourself:
+
+```bash
+TICKS=16 npm run cortex:plug          # compose under the minted gate
+npm run mint:bands -- --min 2 --dry   # see what the ledger wants to grow
+npm run mint:bands -- --min 2         # mint it (kimi signs the calls)
+npm run mint:bands -- --rollback      # un-mint it (as a new version)
+```
 
 ## v0.3 — THE CRITIC CELL: the loop listens to itself
 
@@ -200,7 +304,14 @@ With the seam unconfigured the driver dies at the first downbeat with the
 honest `model-required` boundary — nothing is shimmed, nothing faked
 (pinned in `test/cortex.test.ts`).
 
-## What v0.3 needed (status after the critic-cell drop)
+## What v0.4 addressed (from the list below): (1) the librettist/outline
+half — SHIPPED as the LIBRETTIST; (2) compositional memory — SHIPPED
+(the outline + evolving arc); (3) distillation MINTING — SHIPPED (this
+drop); the compose-side arranger cell and the real-time spine remain
+open for v0.5: an ensemble (bass/drum cells through the MCP's session
+API) on the band-clock scheduler, with BARS_PER>1 amortizing thought.
+
+What v0.3 needed (status after the critic-cell drop)
 
 1. **A critic in the loop — SHIPPED** (see the v0.3 section above). The
    librettist/outline half of this item remains open.

@@ -156,10 +156,14 @@ function bandDirective(channel: string, side: 'low' | 'high'): string {
 
 /** The frozen gate: judge every bar against the intent, mark gray-zone
  *  readings ambiguous, check cross-bar voice-leading and the tension curve.
- *  Pure TS, O(bars × channels) — cost 0, ~1ms, no model. */
+ *  v0.4: when the librettist planned the piece, `opts.tensionTargets`
+ *  (aligned bar-for-bar with `trace`) adds the ARC check — each bar's
+ *  harmonic_tension against the outline's target — the outline's first
+ *  consumer. Pure TS, O(bars × channels) — cost 0, ~1ms, no model. */
 export function cheapCritique(
   trace: TraceBar[],
   intent: CriticIntent,
+  opts: { tensionTargets?: number[] } = {},
 ): Critique {
   const observations: CritiqueObservation[] = [];
 
@@ -223,6 +227,11 @@ export function cheapCritique(
         });
       }
     }
+  }
+
+  // v0.4 — the librettist's arc: each bar against the outline's target
+  if (opts.tensionTargets?.length) {
+    observations.push(...arcObservations(trace, opts.tensionTargets));
   }
 
   return finishCritique(trace.length, observations);
@@ -447,6 +456,8 @@ export function critiqueSignalPayload(args: {
 
 // ── the compose cycle: the GAN loop as one testable orchestration ───────────
 
+import { arcObservations } from './librettist';
+
 /** Injected IO so the driver (HTTP + MCP) and tests (memory + fixtures) run
  *  the SAME loop. O(bars) memory: only the accepted bars and last critique
  *  are held; rejected rounds are reported by reference, not accumulated. */
@@ -498,6 +509,8 @@ export async function composeCycle(io: CycleIO, args: {
   extract: (reply: string, bars: number) => string[];
   key?: string;
   tempo?: number;
+  outline?: Record<string, unknown>;
+  tensionTargets?: number[];
 }): Promise<CycleResult> {
   const rounds: CycleRound[] = [];
   const acceptedSoFar: string[] = [];
@@ -512,6 +525,7 @@ export async function composeCycle(io: CycleIO, args: {
       ...(args.key ? { key: args.key } : {}),
       ...(args.tempo !== undefined ? { tempo: args.tempo } : {}),
       ...(steering ? { steering } : {}),
+      ...(args.outline ? { outline: args.outline } : {}),
     };
     const fired = await io.fireCompose(payload);
     if (!fired.ok) {
@@ -531,7 +545,7 @@ export async function composeCycle(io: CycleIO, args: {
     let serve: CycleRound['serve'] = 'none';
     let seamFailed = false;
     if (trace && trace.length) {
-      critique = cheapCritique(trace, args.intent);
+      critique = cheapCritique(trace, args.intent, args.tensionTargets ? { tensionTargets: args.tensionTargets } : {});
       serve = critiqueServe(critique);
       const sig = await io.fireCritique(critiqueSignalPayload({
         barIndex: args.barIndex, round, serve, intent: args.intent, critique, trace,
