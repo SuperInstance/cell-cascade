@@ -14,13 +14,22 @@ import {
   MYELIN_THRESHOLD_DEFAULT, type Rule, type CellRow,
 } from './cascade';
 import { validateExample, type Example, type ExampleSeed, type SeedCell } from './example';
+import { callModel, type SheetModel } from './bridge';
+import { fireSignal, growRuleIntoSheet, type FireStore } from './firing';
 
 export interface Env {
   DB: D1Database;
   MYELIN_THRESHOLD?: string; // optional override, e.g. for demos
+  // v0.2 — THE MODEL SEAM (secrets; the fleet pattern: any openai-compatible
+  // endpoint — zai, deepseek, ...). Missing = the honest model-call-required boundary.
+  MODEL_BASE_URL?: string;
+  MODEL_KEY?: string;
+  MODEL_TIMEOUT_MS?: string;
+  MODEL_PRICE_IN_PER_MTOK?: string;
+  MODEL_PRICE_OUT_PER_MTOK?: string;
 }
 
-const SYSTEM_SENDERS = new Set(['wound', 'clock', 'environment', 'seed']);
+const SYSTEM_SENDERS = new Set(['wound', 'clock', 'environment', 'seed', 'gardener']);
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -88,6 +97,46 @@ async function updateCellTier(db: D1Database, cell: CellRow, toTier: Tier, at: n
   void at;
 }
 
+/** FireStore over D1 + the real model bridge — everything POST /signal needs. */
+class D1FireStore implements FireStore {
+  constructor(private db: D1Database, private env: Env) {}
+  async getCell(id: string): Promise<CellRow | null> { return getCell(this.db, id); }
+  async getMyelin(pathId: string): Promise<{ fire_count: number; error_count: number } | null> {
+    return this.db.prepare('SELECT fire_count, error_count FROM myelin WHERE path_id = ?').bind(pathId)
+      .first<{ fire_count: number; error_count: number }>();
+  }
+  async upsertMyelin(m: { path_id: string; from_cell: string; to_cell: string; kind: string; fire_count: number; error_count: number; last_fired: number }): Promise<void> {
+    await this.db.prepare(
+      `INSERT INTO myelin (path_id, from_cell, to_cell, kind, fire_count, error_count, last_fired)
+       VALUES (?,?,?,?,?,?,?)
+       ON CONFLICT(path_id) DO UPDATE SET fire_count = excluded.fire_count, error_count = excluded.error_count, last_fired = excluded.last_fired`,
+    ).bind(m.path_id, m.from_cell, m.to_cell, m.kind, m.fire_count, m.error_count, m.last_fired).run();
+  }
+  async markPromoted(pathId: string, tier: Tier): Promise<void> {
+    await this.db.prepare('UPDATE myelin SET tier_promoted_to = ? WHERE path_id = ?').bind(tier, pathId).run();
+  }
+  async insertSignal(s: Parameters<FireStore['insertSignal']>[0]): Promise<number> {
+    const r = await this.db.prepare(
+      'INSERT INTO signals (from_cell, to_cell, kind, payload, ok, mode, model_log, escalated_from, at) VALUES (?,?,?,?,?,?,?,?,?) RETURNING id',
+    ).bind(s.from_cell, s.to_cell, s.kind, JSON.stringify(s.payload), s.ok, s.mode,
+      s.model_log ? JSON.stringify(s.model_log) : null, s.escalated_from, s.at).first<{ id: number }>();
+    return r?.id ?? 0;
+  }
+  async updateCellTier(cell: CellRow, toTier: Tier, at: number): Promise<void> { await updateCellTier(this.db, cell, toTier, at); }
+  async insertDistillation(cellId: string, fromTier: Tier, toTier: Tier, evidenceRef: string, verdict: string, at: number): Promise<void> {
+    await insertDistillation(this.db, cellId, fromTier, toTier, evidenceRef, verdict, at);
+  }
+  async insertCandidate(c: Parameters<FireStore['insertCandidate']>[0]): Promise<number> {
+    const r = await this.db.prepare(
+      'INSERT INTO distillation_candidates (organism, cell_id, escalated_to, signal_id, kind, payload_shape, question, answer, at) VALUES (?,?,?,?,?,?,?,?,?) RETURNING id',
+    ).bind(c.organism, c.cell_id, c.escalated_to, c.signal_id, c.kind, c.payload_shape, c.question, c.answer, c.at).first<{ id: number }>();
+    return r?.id ?? 0;
+  }
+  async callModel(cfg: SheetModel, req: { system: string; user: string }) {
+    return callModel(this.env, cfg, req);
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
@@ -114,11 +163,17 @@ export default {
             'GET /cells/{id}',
             'POST /signal {from, to, kind, payload}',
             'POST /cells/{id}/distill {to_tier, evidence_ref, gardener_verdict}',
-            'GET /organism/{name}/health',
+            'GET /organism/{name}/health?window=N',
             'POST /wound {cell_id}',
+            'GET /organism/{name}/candidates',
+            'POST /candidates/{id}/resolve {status: distilled|dismissed, rule?, evidence_ref, gardener_verdict}',
             'GET /examples', 'POST /examples', 'POST /examples/{id}/instantiate {organism?}',
             'GET /health',
           ],
+          model_seam: {
+            status: env.MODEL_BASE_URL && env.MODEL_KEY ? 'configured' : 'unconfigured',
+            note: 'sheets carry {model: {provider, model, system_prompt}}; MODEL_BASE_URL + MODEL_KEY (secrets) open the bridge — otherwise the model-call-required boundary stays honest',
+          },
         });
       }
       if (path === '/health' && request.method === 'GET') {
@@ -242,7 +297,7 @@ export default {
         return json({ cell, signals: signals.results, myelin: myelin.results, distillations: distillations.results, children: children.results });
       }
 
-      // ── POST /signal — log + fire ─────────────────────────────────────
+      // ── POST /signal — log + fire (v0.2: the model seam is live) ──────
       if (path === '/signal' && request.method === 'POST') {
         const b = await body<{ from?: string; to?: string; kind?: string; payload?: Record<string, unknown> }>();
         const from = String(b?.from ?? '').trim();
@@ -259,85 +314,116 @@ export default {
         if (!target) return err(`to cell "${to}" not found`, 404);
         if (target.status !== 'active') return err(`target cell ${to} is ${target.status} — wound-heal the lineage`, 409);
 
-        const pathId = `${from}->${to}::${kind}`;
-        // fire: sclerotic = deterministic table; anything lower on cost still needs its model
-        let ok = 1;
-        let mode: string;
-        let response: Record<string, unknown>;
-        if (!TIER_PROFILE[target.tier].model_call) {
-          const rules = (parseSheet(target).rules ?? []) as Rule[];
-          const m = matchRule(rules, kind, payload);
-          if (m.hit) {
-            mode = 'table'; response = m.response!;
-          } else {
-            mode = 'table-miss'; ok = 0;
-            response = { miss: true, hint: 'sclerotic tissue with no rule for this signal — wound-heal or extend the table' };
-          }
-        } else {
-          mode = 'model-call-required';
-          response = {
-            deferred: true,
-            cost_per_call: target.cost_per_call,
-            latency_ms: target.latency_ms,
-            hint: `${target.tier} tissue consults the model — the sheet travels with the prompt`,
-          };
-        }
-
-        const myelinBefore = await env.DB.prepare('SELECT * FROM myelin WHERE path_id = ?').bind(pathId).first<{ fire_count: number; error_count: number }>();
-        const fireCount = (myelinBefore?.fire_count ?? 0) + 1;
-        const errorCount = (myelinBefore?.error_count ?? 0) + (ok ? 0 : 1);
-        await env.DB.prepare(
-          `INSERT INTO myelin (path_id, from_cell, to_cell, kind, fire_count, error_count, last_fired)
-           VALUES (?,?,?,?,?,?,?)
-           ON CONFLICT(path_id) DO UPDATE SET fire_count = excluded.fire_count, error_count = excluded.error_count, last_fired = excluded.last_fired`,
-        ).bind(pathId, from, to, kind, fireCount, errorCount, now).run();
-
-        // AUTO-PROMOTION: differentiated tissue whose path myelinated scleroses.
-        let promotion: Record<string, unknown> | null = null;
-        const th = threshold(env);
-        const verdict = shouldMyelinate(fireCount, errorCount, th);
-        if (ok && target.tier === 'differentiated' && verdict.promote) {
-          await updateCellTier(env.DB, target, 'sclerotic', now);
-          await env.DB.prepare('UPDATE myelin SET tier_promoted_to = ? WHERE path_id = ?').bind('sclerotic', pathId).run();
-          await insertDistillation(env.DB, target.id, 'differentiated', 'sclerotic',
-            `myelin:${pathId} fires=${fireCount} errors=${errorCount}`,
-            `auto: ${verdict.reason}`, now);
-          promotion = { cell: target.id, from: 'differentiated', to: 'sclerotic', reason: verdict.reason, cost_now: 0, latency_now_ms: 1 };
-        }
-
-        const sig = await env.DB.prepare(
-          'INSERT INTO signals (from_cell, to_cell, kind, payload, ok, at) VALUES (?,?,?,?,?,?) RETURNING id',
-        ).bind(from, to, kind, JSON.stringify(payload), ok, now).first<{ id: number }>();
-
+        // fire through the seam: table | model | escalated | the honest boundary
+        const store = new D1FireStore(env.DB, env);
+        const result = await fireSignal(store, { from, to, kind, payload }, { now, threshold: threshold(env) });
         return json({
-          signal_id: sig?.id ?? null,
-          fired: { mode, response, cost_per_call: mode === 'table' ? 0 : target.cost_per_call, latency_ms: mode === 'table' ? 1 : target.latency_ms },
-          target_tier_before: target.tier,
-          myelin: { path_id: pathId, fire_count: fireCount, error_count: errorCount, threshold: th },
-          promotion,
+          fired: {
+            mode: result.mode,
+            response: result.response,
+            cost_per_call: result.cost_per_call,
+            latency_ms: result.latency_ms,
+          },
+          ...result,
         });
       }
 
-      // ── GET /organism/{name}/health ───────────────────────────────────
+      // ── GET /organism/{name}/health — incl. the COST TUMOR WATCH ────
       const healthMatch = path.match(/^\/organism\/([^/]+)\/health$/);
       if (healthMatch && request.method === 'GET') {
         const name = decodeURIComponent(healthMatch[1]);
         const org = await env.DB.prepare('SELECT zygote_id FROM organisms WHERE name = ?').bind(name).first();
         if (!org) return err(`organism "${name}" not found`, 404);
+        const windowParam = Number(url.searchParams.get('window'));
+        const windowN = Number.isFinite(windowParam) && windowParam >= 1 ? Math.min(1000, Math.floor(windowParam)) : 100;
         const [cellsRes, myelinRes, signalsRes] = await Promise.all([
           env.DB.prepare('SELECT * FROM cells WHERE organism = ?').bind(name).all(),
           env.DB.prepare(
             `SELECT m.* FROM myelin m JOIN cells c ON c.id = m.to_cell WHERE c.organism = ?`,
           ).bind(name).all(),
           env.DB.prepare(
-            `SELECT s.* FROM signals s JOIN cells c ON c.id = s.to_cell WHERE c.organism = ? ORDER BY s.at DESC LIMIT 500`,
-          ).bind(name).all(),
+            `SELECT s.* FROM signals s JOIN cells c ON c.id = s.to_cell WHERE c.organism = ? ORDER BY s.at DESC LIMIT ?`,
+          ).bind(name, windowN).all(),
         ]);
         const cells = (cellsRes.results as Record<string, unknown>[]).map(cellFrom);
         const myelin = myelinRes.results as unknown[];
         const signals = signalsRes.results as unknown[];
         const snap = healthSnapshot(name, cells, myelin as never, signals as never, threshold(env));
-        return json(snap);
+        return json({ ...snap, window: windowN });
+      }
+
+      // ── GET /organism/{name}/candidates — the escalation ledger ──────
+      const candMatch = path.match(/^\/organism\/([^/]+)\/candidates$/);
+      if (candMatch && request.method === 'GET') {
+        const name = decodeURIComponent(candMatch[1]);
+        const status = url.searchParams.get('status');
+        const { results } = status
+          ? await env.DB.prepare('SELECT * FROM distillation_candidates WHERE organism = ? AND status = ? ORDER BY at DESC').bind(name, status).all()
+          : await env.DB.prepare('SELECT * FROM distillation_candidates WHERE organism = ? ORDER BY at DESC').bind(name).all();
+        const rows = results as Record<string, unknown>[];
+        return json({
+          organism: name,
+          candidates: rows,
+          counts: {
+            open: rows.filter(r => r.status === 'open').length,
+            distilled: rows.filter(r => r.status === 'distilled').length,
+            dismissed: rows.filter(r => r.status === 'dismissed').length,
+          },
+          doctrine: 'each open candidate is a hole in a rule table the germ line covered — distill the answer into a rule and the tissue grows',
+        });
+      }
+
+      // ── POST /candidates/{id}/resolve — the gardener grows the table ──
+      const resolveMatch = path.match(/^\/candidates\/(\d+)\/resolve$/);
+      if (resolveMatch && request.method === 'POST') {
+        const candId = Number(resolveMatch[1]);
+        const cand = await env.DB.prepare('SELECT * FROM distillation_candidates WHERE id = ?').bind(candId).first<{
+          id: number; organism: string; cell_id: string; escalated_to: string; signal_id: number;
+          kind: string; payload_shape: string; question: string | null; answer: string | null;
+          status: string; at: number;
+        }>();
+        if (!cand) return err(`candidate ${candId} not found`, 404);
+        if (cand.status !== 'open') return err(`candidate ${candId} is already ${cand.status}`, 409);
+        const b = await body<{ status?: string; rule?: { when?: Record<string, unknown>; respond?: Record<string, unknown> }; evidence_ref?: string; gardener_verdict?: string }>();
+        const status = String(b?.status ?? 'distilled');
+        if (status !== 'distilled' && status !== 'dismissed') return err('status must be distilled|dismissed');
+        if (!String(b?.evidence_ref ?? '').trim()) return err('evidence_ref is required — no fate decision without provenance');
+        const verdict = String(b?.gardener_verdict ?? '').trim() || `gardener resolved candidate ${candId} (${status})`;
+
+        if (status === 'dismissed') {
+          await env.DB.prepare('UPDATE distillation_candidates SET status = ?, resolved_at = ?, resolution = ? WHERE id = ?')
+            .bind('dismissed', now, `${verdict} (evidence: ${b!.evidence_ref})`, candId).run();
+          return json({ resolved: candId, status: 'dismissed', gardener_verdict: verdict });
+        }
+
+        // distilled: grow the answer into the cell's rule table — the
+        // organism filling the hole the escalation exposed.
+        const rule = b?.rule;
+        if (!rule || typeof rule !== 'object' || !rule.when || !rule.respond) {
+          return err('rule {when: {kind?, payload_equals?}, respond: {...}} is required to distill a candidate');
+        }
+        const cell = await getCell(env.DB, cand.cell_id);
+        if (!cell) return err(`cell ${cand.cell_id} no longer exists — organism changed since the escalation`, 409);
+        if (cell.status !== 'active') return err(`cell ${cell.id} is ${cell.status} — wound-heal first`, 409);
+        const sheet = growRuleIntoSheet(parseSheet(cell), rule as { when: Rule['when']; respond: Record<string, unknown> });
+        await env.DB.batch([
+          env.DB.prepare('UPDATE cells SET sheet_json = ?, versions = versions + 1 WHERE id = ?')
+            .bind(JSON.stringify(sheet), cell.id),
+          env.DB.prepare('UPDATE distillation_candidates SET status = ?, resolved_at = ?, resolution = ? WHERE id = ?')
+            .bind('distilled', now, `${verdict} (evidence: ${b!.evidence_ref})`, candId),
+          env.DB.prepare(
+            'INSERT INTO signals (from_cell, to_cell, kind, payload, ok, mode, model_log, escalated_from, at) VALUES (?,?,?,?,?,?,?,?,?)',
+          ).bind('gardener', cell.id, 'rule-grown', JSON.stringify({ candidate: candId, rule: rule.when }), 1, 'table', null, null, now),
+        ]);
+        return json({
+          resolved: candId,
+          status: 'distilled',
+          cell: cell.id,
+          rule_grown: rule,
+          rules_now: (sheet.rules as Rule[]).length,
+          gardener_verdict: verdict,
+          note: 'the hole is now deterministic tissue — the next signal of this kind hits the table, cost 0',
+        });
       }
 
       // ── POST /wound — wound healing ───────────────────────────────────

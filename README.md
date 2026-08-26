@@ -51,10 +51,12 @@ organisms.
 | `GET /organisms` | list organisms |
 | `POST /cell {organism, name, from_cell, role, tier?}` | **mitosis** — child inherits the sheet, new fate slot (`role`); optional `tier` = early differentiation |
 | `GET /cells?organism=` / `GET /cells/{id}` | inspect cells, their signals, myelin paths, fate history, children |
-| `POST /signal {from, to, kind, payload}` | log + **fire** — sclerotic targets answer deterministically from the rule table (cost 0, ~1ms); lower tiers defer to the model; myelin counters increment; **auto-promotion** when the path crosses threshold clean |
+| `POST /signal {from, to, kind, payload}` | log + **fire** — sclerotic targets answer deterministically from the rule table (cost 0, ~1ms); totipotent/multipotent/differentiated targets **think through the model seam** when sheet config + worker env are both present (tokens/latency/cost logged on the signal); differentiated rule-table misses **escalate UP** to the germ line; myelin counters increment; **auto-promotion** when the path crosses threshold clean |
 | `POST /cells/{id}/distill {to_tier, evidence_ref, gardener_verdict}` | explicit fate decision — downward only, **provenance required** |
-| `GET /organism/{name}/health` | tier balance, % totipotent load, % zero-cost serve, sclerosis warnings, myelin hot paths |
+| `GET /organism/{name}/health` | tier balance, % totipotent load, % zero-cost serve, **serve-mode split (model / table / escalated / deferred / error)**, **cost-tumor watch** (warns when germ-line serving > 5%), sclerosis warnings, myelin hot paths |
 | `POST /wound {cell_id}` | **wound healing** — retire the wounded cell, recall the lineage to the nearest totipotent ancestor WITH its sheet, grow a multipotent blastema carrying the wounded fate; dedifferentiates the root if no totipotent remains |
+| `GET /organism/{name}/candidates` | **the escalation ledger (v0.2)** — every rule-table miss the germ line successfully covered, recorded as a distillation candidate: the hole's kind, payload shape, question, and the answer that should become a rule |
+| `POST /candidates/{id}/resolve {status, rule?, evidence_ref, gardener_verdict}` | **grow the table** — distill a candidate into a deterministic rule appended to the cell's sheet (provenance required); the next signal of that kind hits the table at cost 0 |
 | `GET /examples` · `POST /examples` · `POST /examples/{id}/instantiate` | the saved-decomposition library |
 
 `GET /` lists the contract; `GET /health` is liveness.
@@ -69,6 +71,61 @@ npm run db:migrate:remote  # apply schema.sql
 npm run deploy             # wrangler deploy
 npm run seed               # WORKER_URL=https://cell-cascade.<subdomain>.workers.dev
 ```
+
+Upgrading a v0.1 database to v0.2 (signals mode/model_log columns + the
+distillation_candidates table):
+
+```bash
+wrangler d1 execute cell-cascade-db --remote --file migrations/2026-08-25-v0.2-model-seam.sql
+```
+
+### The model seam (v0.2) — letting totipotent tissue actually think
+
+The v0.1 honest gap: signals to non-sclerotic cells returned
+`model-call-required`. v0.2 closes it **gated and observable**:
+
+1. **Cell sheets carry model config** — `{ model: { provider, model, system_prompt, max_tokens?, temperature? } }`
+   (provider is informational; the v0.2 contract is any openai-compatible
+   `/chat/completions` endpoint).
+2. **The worker carries the keys as secrets** (the fleet pattern):
+
+```bash
+wrangler secret put MODEL_BASE_URL      # e.g. https://api.deepseek.com  or  https://api.z.ai/api/coding/paas/v4
+wrangler secret put MODEL_KEY
+# optional: wrangler secret put MODEL_TIMEOUT_MS (default 20000, hard abort)
+#           wrangler secret put MODEL_PRICE_IN_PER_MTOK   # USD per 1M tokens, enables cost_estimate_usd
+#           wrangler secret put MODEL_PRICE_OUT_PER_MTOK
+```
+
+3. **POST /signal to a model tier** now actually calls the model, wearing the
+   sheet's system prompt, with a hard 20s timeout. Every exchange is logged on
+   the signal: `mode: "model"`, prompt/completion tokens, latency, cost
+   estimate (null if prices unconfigured — honest about what we know).
+4. **If either side is missing — sheet config OR worker env — the boundary
+   stays honest**: still the clear `model-call-required` response, nothing
+   fetched, no silent guessing.
+
+**Escalation as a path**: a *differentiated* cell may carry a forming rule
+ table (`sheet.rules`). A hit serves deterministically at cost 0. A **miss
+ routes UP** to the lineage's nearest active totipotent ancestor
+ (`created_from` chain), which answers via the model bridge wearing **its
+ own system prompt composed with the failed child's role context** — the germ
+ line answers *in the child's scope of fate*. The signal is logged with
+ `mode: "escalated"`, `escalated_from: <child>`, and the missed-rule +
+ successful-escalation pair is recorded as a **distillation candidate**:
+ evidence the rule table has a hole the organism should grow into. The
+ gardener resolves candidates via `POST /candidates/{id}/resolve`, appending
+ the distilled answer as a deterministic rule — the next signal of that kind
+ hits the table at cost 0. That's the whole growth loop: **miss → germ line
+ covers → candidate → rule grown → tendency myelinates → sclerotic tissue.**
+
+**Cost tumor watch** (the cancer metric): `GET /organism/{name}/health?window=N`
+ (default 100) reports the serve-mode split and `totipotent_serve_pct` — the
+ share of recent signals served by germ-line thinking (model calls to
+ totipotent targets **plus** escalations). Above **5%** it flags
+ `cost_tumor.warning`: the organism is leaning on its stem cells; differentiate
+ dedicated tissue or grow rule tables from the candidates. A healthy organism
+ keeps the germ line rare — wound healing and genuine novelty only.```
 
 Local: `npm run db:migrate:local && npm run dev` then `npm run seed`
 (defaults to `http://localhost:8787`).

@@ -32,11 +32,14 @@ CREATE INDEX IF NOT EXISTS idx_cells_created_from ON cells (created_from);
 -- The connectome log: every signal that crossed an axon.
 CREATE TABLE IF NOT EXISTS signals (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  from_cell TEXT NOT NULL,                        -- cell id, or a system sentinel ('wound','clock','environment')
+  from_cell TEXT NOT NULL,                        -- cell id, or a system sentinel ('wound','clock','environment','gardener')
   to_cell TEXT NOT NULL,
   kind TEXT NOT NULL,
   payload TEXT,
   ok INTEGER NOT NULL DEFAULT 1,                  -- 0 = miss/error (e.g. sclerotic rule-table miss)
+  mode TEXT,                                      -- v0.2: how it was served (table|model|escalated|model-required|...)
+  model_log TEXT,                                 -- v0.2: JSON — tokens, latency, cost estimate, escalated_from
+  escalated_from TEXT,                            -- v0.2: set when a germ-line ancestor answered for a child
   at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_signals_to ON signals (to_cell, at);
@@ -79,3 +82,26 @@ CREATE TABLE IF NOT EXISTS examples (
   seed_json TEXT NOT NULL,                        -- full organism seed
   evidence_ref TEXT
 );
+
+-- DISTILLATION CANDIDATES (v0.2 — the escalation ledger): every time a
+-- differentiated cell's rule table MISSED and a totipotent ancestor
+-- successfully answered via the model bridge, the pair (missed rule,
+-- successful escalation) is recorded here — evidence the rule table has
+-- a hole the organism should grow into. The gardener resolves candidates
+-- by distilling the answer into a deterministic rule.
+CREATE TABLE IF NOT EXISTS distillation_candidates (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  organism TEXT NOT NULL,
+  cell_id TEXT NOT NULL,                          -- the differentiated cell whose table missed
+  escalated_to TEXT NOT NULL,                     -- the totipotent ancestor that answered
+  signal_id INTEGER NOT NULL,                     -- the signal that exposed the hole
+  kind TEXT NOT NULL,                             -- the missed signal kind
+  payload_shape TEXT NOT NULL,                    -- sorted payload keys — the hole's shape
+  question TEXT,                                  -- what was asked
+  answer TEXT,                                    -- what the germ line said (the seed of the new rule)
+  status TEXT NOT NULL DEFAULT 'open',            -- open|distilled|dismissed
+  resolved_at INTEGER,
+  resolution TEXT,                                -- gardener verdict on resolve (provenance)
+  at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_candidates_organism ON distillation_candidates (organism, status);

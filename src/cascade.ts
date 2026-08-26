@@ -41,6 +41,9 @@ export interface SignalRow {
   kind: string;
   payload: string | null;
   ok: number;
+  mode: string | null;        // v0.2: HOW the signal was served (table|model|escalated|...)
+  model_log: string | null;   // v0.2: JSON — tokens, latency, cost estimate, provenance
+  escalated_from: string | null;
   at: number;
 }
 
@@ -175,10 +178,33 @@ export interface HealthSnapshot {
   tier_pct: Record<Tier, number>;
   totipotent_load_pct: number;       // % of recent signals landing on full-model cells (the expensive lane)
   zero_cost_serve_pct: number;       // % of recent signals served with no model call (sclerotic tissue)
+  serve_modes_pct: Record<string, number>;   // v0.2: model | table | escalated | model_required | error
+  totipotent_serve_pct: number;      // v0.2: model calls to totipotent targets + escalations
+  cost_tumor: {
+    threshold_pct: number;
+    totipotent_serve_pct: number;
+    window: number;
+    warning: boolean;
+    note: string;
+  };
   avg_cost_per_call: number;         // mean across ACTIVE cells
   myelin_paths: number;
   sclerosis_warnings: Array<{ cell_id: string; name: string; tier: Tier; note: string }>;
   hot_paths: Array<{ path_id: string; fire_count: number; error_count: number }>;
+}
+
+export const COST_TUMOR_THRESHOLD_PCT = 5; // the cancer metric: >5% germ-line serving = tumor
+
+/** How a signal was served — explicit mode when present (v0.2), inferred
+ *  from tier/ok for v0.1 legacy rows. */
+export function inferServeMode(s: Pick<SignalRow, 'ok' | 'mode'>, targetTier: Tier): string {
+  if (s.mode) return s.mode;
+  if (s.ok === 0) return 'table-miss';
+  return targetTier === 'sclerotic' ? 'table' : 'model_required';
+}
+
+function pct(n: number, d: number): number {
+  return d ? Math.round((n / d) * 1000) / 10 : 0;
 }
 
 export function healthSnapshot(
@@ -198,13 +224,36 @@ export function healthSnapshot(
 
   const byId = new Map(cells.map(c => [c.id, c] as const));
   let toTip = 0, toZero = 0, total = 0;
+  const modeCounts: Record<string, number> = {
+    model: 0, table: 0, escalated: 0, model_required: 0, error: 0,
+  };
+  let germServing = 0; // model calls landing on totipotent targets + escalations
   for (const s of signals) {
     const target = byId.get(s.to_cell);
     if (!target) continue;
     total++;
     if (target.tier === 'totipotent') toTip++;
     if (!TIER_PROFILE[target.tier].model_call) toZero++;
+    const m = inferServeMode(s, target.tier);
+    if (m in modeCounts) modeCounts[m]++;
+    else if (m === 'table-miss' || m === 'model-error' || m === 'escalation-failed') modeCounts.error++;
+    if (m === 'model' && target.tier === 'totipotent') germServing++;
+    if (m === 'escalated') germServing++;
   }
+  const serve_modes_pct: Record<string, number> = {};
+  for (const [k, v] of Object.entries(modeCounts)) serve_modes_pct[k] = pct(v, total);
+  const totipotent_serve_pct = pct(germServing, total);
+  const cost_tumor = {
+    threshold_pct: COST_TUMOR_THRESHOLD_PCT,
+    totipotent_serve_pct,
+    window: total,
+    warning: total > 0 && totipotent_serve_pct > COST_TUMOR_THRESHOLD_PCT,
+    note: total === 0
+      ? 'no recent signals — nothing to watch'
+      : totipotent_serve_pct > COST_TUMOR_THRESHOLD_PCT
+        ? `COST TUMOR: the germ line served ${totipotent_serve_pct}% of the last ${total} signals (> ${COST_TUMOR_THRESHOLD_PCT}%) — the organism is leaning on its stem cells; differentiate dedicated tissue or grow rule tables from distillation candidates`
+        : `healthy: germ line served ${totipotent_serve_pct}% of the last ${total} signals (<= ${COST_TUMOR_THRESHOLD_PCT}%)`,
+  };
 
   const myelinByTarget = new Map<string, MyelinRow[]>();
   for (const m of myelin) {
@@ -251,8 +300,11 @@ export function healthSnapshot(
     cells_active: active.length,
     tier_counts,
     tier_pct,
-    totipotent_load_pct: total ? Math.round((toTip / total) * 1000) / 10 : 0,
-    zero_cost_serve_pct: total ? Math.round((toZero / total) * 1000) / 10 : 0,
+    totipotent_load_pct: pct(toTip, total),
+    zero_cost_serve_pct: pct(toZero, total),
+    serve_modes_pct,
+    totipotent_serve_pct,
+    cost_tumor,
     avg_cost_per_call: active.length
       ? Math.round((active.reduce((a, c) => a + c.cost_per_call, 0) / active.length) * 1000) / 1000
       : 0,

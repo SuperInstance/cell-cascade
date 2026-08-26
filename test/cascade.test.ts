@@ -171,10 +171,10 @@ function healthFixture() {
     { path_id: 'zygote->clock::novel', from_cell: 'zygote', to_cell: 'clock', kind: 'novel', fire_count: 3, error_count: 2, tier_promoted_to: null, last_fired: 1 },
   ];
   const signals: SignalRow[] = [
-    { id: 1, from_cell: 'zygote', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, at: 1 },
-    { id: 2, from_cell: 'zygote', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, at: 2 },
-    { id: 3, from_cell: 'zygote', to_cell: 'zygote', kind: 'plan', payload: null, ok: 1, at: 3 },
-    { id: 4, from_cell: 'zygote', to_cell: 'clock', kind: 'novel', payload: null, ok: 0, at: 4 },
+    { id: 1, from_cell: 'zygote', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 1 },
+    { id: 2, from_cell: 'zygote', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 2 },
+    { id: 3, from_cell: 'zygote', to_cell: 'zygote', kind: 'plan', payload: null, ok: 1, mode: 'model', model_log: null, escalated_from: null, at: 3 },
+    { id: 4, from_cell: 'zygote', to_cell: 'clock', kind: 'novel', payload: null, ok: 0, mode: 'table-miss', model_log: null, escalated_from: null, at: 4 },
   ];
   return { cells, myelin, signals };
 }
@@ -210,6 +210,58 @@ test('health: hot paths rank by fire count', () => {
   const h = healthSnapshot('org', cells, myelin, signals);
   assert.equal(h.hot_paths[0].path_id, 'zygote->clock::tick');
   assert.equal(h.hot_paths[0].fire_count, 269);
+});
+
+// ── v0.2: COST TUMOR WATCH (the cancer metric) ───────────────────────────────
+test('health: serve-mode breakdown — model vs deterministic vs escalated', () => {
+  const { cells, myelin } = healthFixture();
+  const signals: SignalRow[] = [
+    { id: 1, from_cell: 'clock', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 1 },
+    { id: 2, from_cell: 'clock', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 2 },
+    { id: 3, from_cell: 'clock', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 3 },
+    { id: 4, from_cell: 'clock', to_cell: 'zygote', kind: 'plan', payload: null, ok: 1, mode: 'model', model_log: null, escalated_from: null, at: 4 },
+    { id: 5, from_cell: 'zygote', to_cell: 'critic', kind: 'ask', payload: null, ok: 1, mode: 'escalated', model_log: null, escalated_from: 'critic', at: 5 },
+    { id: 6, from_cell: 'clock', to_cell: 'clock', kind: 'novel', payload: null, ok: 0, mode: 'table-miss', model_log: null, escalated_from: null, at: 6 },
+  ];
+  const h = healthSnapshot('org', cells, myelin, signals);
+  assert.equal(h.serve_modes_pct.table, 50);        // 3 of 6
+  assert.equal(h.serve_modes_pct.model, 16.7);      // 1 of 6
+  assert.equal(h.serve_modes_pct.escalated, 16.7);  // 1 of 6
+  assert.equal(h.serve_modes_pct.error, 16.7);      // 1 of 6 (table-miss)
+  assert.equal(h.serve_modes_pct.model_required, 0);
+  // germ-line serving = model calls to totipotent targets + escalations = 2/6 = 33.3%
+  assert.equal(h.totipotent_serve_pct, 33.3);
+  assert.equal(h.cost_tumor.warning, true, '33.3% > 5% — the tumor is flagged');
+  assert.match(h.cost_tumor.note, /COST TUMOR/);
+  assert.equal(h.cost_tumor.window, 6);
+});
+
+test('health: a healthy organism stays under the tumor threshold', () => {
+  const { cells, myelin } = healthFixture();
+  const signals: SignalRow[] = [
+    { id: 1, from_cell: 'clock', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 1 },
+    { id: 2, from_cell: 'clock', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 2 },
+    { id: 3, from_cell: 'clock', to_cell: 'critic', kind: 'ask', payload: null, ok: 1, mode: 'model', model_log: null, escalated_from: null, at: 3 },
+    { id: 4, from_cell: 'clock', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 4 },
+    { id: 5, from_cell: 'clock', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 5 },
+    { id: 6, from_cell: 'clock', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 6 },
+    { id: 7, from_cell: 'clock', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 7 },
+    { id: 8, from_cell: 'clock', to_cell: 'clock', kind: 'tick', payload: null, ok: 1, mode: 'table', model_log: null, escalated_from: null, at: 8 },
+  ];
+  const h = healthSnapshot('org', cells, myelin, signals);
+  // one model call, but to the DIFFERENTIATED critic — not germ-line serving
+  assert.equal(h.totipotent_serve_pct, 0);
+  assert.equal(h.cost_tumor.warning, false);
+  assert.match(h.cost_tumor.note, /healthy/);
+});
+
+test('health: legacy v0.1 signals (no mode) are inferred, not crashed on', () => {
+  const { cells, myelin, signals } = healthFixture();
+  const legacy = signals.map(({ mode, model_log, escalated_from, ...rest }) => rest) as SignalRow[];
+  const h = healthSnapshot('org', cells, myelin, legacy);
+  assert.equal(h.serve_modes_pct.table, 50);        // 2 ok-signals to sclerotic clock of 4
+  assert.equal(h.serve_modes_pct.error, 25);        // ok=0 -> table-miss -> error
+  assert.equal(h.totipotent_serve_pct, 0, 'legacy defer to zygote is model_required, not germ-serving');
 });
 
 // ── the doctrine, stated as an invariant ──────────────────────────────────────
