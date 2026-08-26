@@ -23,3 +23,9 @@
 
 ## v3 — ROLLBACK → restores v1 (2026-08-26T18:19:31.426Z)
 - … */*: rollback — version 3 restores the bands of version 1; the mint that made 2 stays in history, reversible again
+
+## v3 → metal — REFLEX-ARC REPLAY, 0 divergences (2026-08-26)
+- the standing gate v3 (sha256 `9c896bb021e87b782c6a00121af830db9f86d9ded49ba6b3e6c35c4213a7e3e4`) exported integer-only to ESP32-S3 (critic-gate.qm, micro-units 1e-6) and replayed against the desktop `cheapCritique` band gate
+- corpus: 80 real bars the organism wrote (19 runs; .song accepted bars + tick-log candidate heads + arranger stock bars) = 480 channel readings, plus all 20 logged `gate` evidence readings as anchor probes — **500 real vectors; 100.0000% agreement** (480/480 readings, 80/80 verdicts, 20/20 anchors). Pre-registered divergence classes (table inexpressiveness, band-edge rounding): **none observed**
+- finding filed — **F1 (ledger granularity)**: tick-log.jsonl records only violation/gray evidence (20 readings), not every judged vector; a ≥500-vector replay required reconstruction from logged artifacts (.song + answer heads + stock table), validated by the 20/20 anchor match. If the metal lane matters, log the full per-bar trace per critique.
+- full account: `docs/reflex-arc-export.md` · metal side: quilt-esp32 branch `reflex-arc`, `docs/REFLEX-ARC-2026-08-26.md`

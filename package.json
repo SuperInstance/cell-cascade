@@ -14,7 +14,9 @@
     "db:migrate:local": "wrangler d1 execute cell-cascade-db --file schema.sql --local",
     "db:migrate:remote": "wrangler d1 execute cell-cascade-db --file schema.sql --remote",
     "db:migrate:v0.2": "wrangler d1 execute cell-cascade-db --remote --file migrations/2026-08-25-v0.2-model-seam.sql",
-    "mint:bands": "tsx scripts/mint_bands.ts"
+    "mint:bands": "tsx scripts/mint_bands.ts",
+    "export:gateqm": "tsx scripts/export_gate_qm.ts",
+    "reflex:reference": "tsx scripts/reflex_reference.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260822.1",
