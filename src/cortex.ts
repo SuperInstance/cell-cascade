@@ -62,6 +62,8 @@ export function bandleaderSystemPrompt(voice: BandleaderVoice = {}): string {
     'HOW TO DECIDE WHAT TO PLAY: the signal payload carries {bar_index,',
     'changes, key, tempo, recent}. `changes` is the chord for this bar —',
     'voice-lead inside it (shell voicings beat root-position thickeners).',
+    'With `bars` > 1, `changes` lists the cycle\'s chords comma-joined, one',
+    'per bar in order — one chord per bar, no reharmonizing the list.',,
     '`recent` is what you wrote last — CONTINUE the line: stepwise motion,',
     'call-and-answer across the changes, leave slots empty so the bar',
     'breathes (not every 8th speaks), land some attacks off the beat.',

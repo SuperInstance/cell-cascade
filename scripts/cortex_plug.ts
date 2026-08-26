@@ -168,7 +168,11 @@ async function main(): Promise<void> {
     jlog({ tick, beat: tp.beat, mode: fired.mode, action, latency_ms: fired.fired?.latency_ms, myelin: fired.myelin?.fire_count });
     if (fired.mode !== 'table') die(`tick ${tick}: metronome served "${fired.mode}" — the spine must be table tissue`);
     if (action === 'compose') {
-      const barIndex = composes;
+      // v0.4: BARS_PER > 1 amortizes compose latency — one thought writes a
+      // multi-bar window; bar_index advances by BARS_PER per served cycle,
+      // and `changes` spans the cycle's chords comma-joined (one per bar).
+      const barIndex = composes * BARS_PER;
+      const cycleChanges = Array.from({ length: BARS_PER }, (_, i) => CHANGES[(barIndex + i) % CHANGES.length]).join(', ');
       const recent = barLines.slice(-2);
 
       // v0.4: consult the librettist — the outline signal serves the plan
@@ -228,7 +232,7 @@ async function main(): Promise<void> {
           } catch { analyzeFailures++; return null; }
         },
       }, {
-        barIndex, changes: CHANGES[barIndex % CHANGES.length], bars: BARS_PER,
+        barIndex, changes: cycleChanges, bars: BARS_PER,
         recent, intent: INTENT, steering: carriedSteering, ganRounds: GAN_ROUNDS,
         key: KEY, tempo: TEMPO,
         outline: outline as unknown as Record<string, unknown>,
