@@ -26,6 +26,7 @@
 // ── the bandleader's voice ──────────────────────────────────────────────────
 
 import { type SteeringHints } from './critic';
+import { type OutlineForBar } from './librettist';
 
 export interface BandleaderVoice {
   style?: string;      // free text: the sound the organism wants
@@ -72,6 +73,12 @@ export function bandleaderSystemPrompt(voice: BandleaderVoice = {}): string {
     'imperatives to fix it. You MUST honor them: they override your default',
     'instincts for this bar. A bar that ignores the steering will be caught',
     'by the same gate that wrote it.',
+    '',
+    'OUTLINE (v0.4): if the payload carries `outline`, the librettist planned',
+    'this piece — the form, the section you are in, and the harmonic tension',
+    'the arc wants in this bar (`tension_target`, 0–1). Honor the arc: lean',
+    'into color tones when the target runs high, plain shells when it',
+    'settles. The critic checks your tension against the same target.',
     '',
     `THE SOUND: ${style}.`,
   ].join('\n');
@@ -135,6 +142,7 @@ export function composePayload(args: {
   tempo?: number;
   recent?: string[];
   steering?: SteeringHints;
+  outline?: OutlineForBar;
 }): Record<string, unknown> {
   return {
     bar_index: args.barIndex,
@@ -144,6 +152,7 @@ export function composePayload(args: {
     ...(args.tempo ? { tempo: args.tempo } : {}),
     ...(args.recent?.length ? { recent: args.recent } : {}),
     ...(args.steering ? { steering: args.steering } : {}),
+    ...(args.outline ? { outline: args.outline } : {}),
   };
 }
 
