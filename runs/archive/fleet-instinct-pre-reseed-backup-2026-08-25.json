@@ -1,0 +1,168 @@
+[
+  {
+    "results": [
+      {
+        "t": "cells",
+        "id": "fleet-instinct:fleet-germ",
+        "organism": "fleet-instinct",
+        "tier": "totipotent"
+      },
+      {
+        "t": "cells",
+        "id": "fleet-instinct:sacred-space",
+        "organism": "fleet-instinct",
+        "tier": "sclerotic"
+      },
+      {
+        "t": "cells",
+        "id": "fleet-instinct:honesty-gate",
+        "organism": "fleet-instinct",
+        "tier": "differentiated"
+      },
+      {
+        "t": "cells",
+        "id": "fleet-instinct:room-entry",
+        "organism": "fleet-instinct",
+        "tier": "differentiated"
+      },
+      {
+        "t": "cells",
+        "id": "fleet-instinct:critique-budget",
+        "organism": "fleet-instinct",
+        "tier": "sclerotic"
+      },
+      {
+        "t": "cells",
+        "id": "fleet-instinct:verify-from-outside",
+        "organism": "fleet-instinct",
+        "tier": "differentiated"
+      },
+      {
+        "t": "cells",
+        "id": "fleet-instinct:ensign-watchlist",
+        "organism": "fleet-instinct",
+        "tier": "differentiated"
+      },
+      {
+        "t": "myelin",
+        "id": "fleet-instinct:fleet-germ->fleet-instinct:sacred-space::declare-space",
+        "organism": "fleet-instinct:sacred-space",
+        "tier": "7"
+      },
+      {
+        "t": "myelin",
+        "id": "fleet-instinct:fleet-germ->fleet-instinct:honesty-gate::capability-claim",
+        "organism": "fleet-instinct:honesty-gate",
+        "tier": "8"
+      },
+      {
+        "t": "myelin",
+        "id": "fleet-instinct:fleet-germ->fleet-instinct:room-entry::join",
+        "organism": "fleet-instinct:room-entry",
+        "tier": "4"
+      },
+      {
+        "t": "myelin",
+        "id": "fleet-instinct:fleet-germ->fleet-instinct:room-entry::counter-offer",
+        "organism": "fleet-instinct:room-entry",
+        "tier": "1"
+      },
+      {
+        "t": "myelin",
+        "id": "fleet-instinct:fleet-germ->fleet-instinct:critique-budget::critique",
+        "organism": "fleet-instinct:critique-budget",
+        "tier": "16"
+      },
+      {
+        "t": "myelin",
+        "id": "fleet-instinct:fleet-germ->fleet-instinct:verify-from-outside::green-tick-claim",
+        "organism": "fleet-instinct:verify-from-outside",
+        "tier": "7"
+      },
+      {
+        "t": "myelin",
+        "id": "fleet-instinct:fleet-germ->fleet-instinct:honesty-gate::evidence-citation",
+        "organism": "fleet-instinct:honesty-gate",
+        "tier": "1"
+      },
+      {
+        "t": "signals",
+        "id": "76",
+        "organism": "fleet-instinct:fleet-germ",
+        "tier": "fleet-instinct:sacred-space"
+      },
+      {
+        "t": "signals",
+        "id": "77",
+        "organism": "fleet-instinct:fleet-germ",
+        "tier": "fleet-instinct:verify-from-outside"
+      },
+      {
+        "t": "signals",
+        "id": "78",
+        "organism": "fleet-instinct:fleet-germ",
+        "tier": "fleet-instinct:honesty-gate"
+      },
+      {
+        "t": "distillations",
+        "id": "5",
+        "organism": "fleet-instinct:sacred-space",
+        "tier": "sclerotic"
+      },
+      {
+        "t": "distillations",
+        "id": "6",
+        "organism": "fleet-instinct:honesty-gate",
+        "tier": "differentiated"
+      },
+      {
+        "t": "distillations",
+        "id": "7",
+        "organism": "fleet-instinct:room-entry",
+        "tier": "differentiated"
+      },
+      {
+        "t": "distillations",
+        "id": "8",
+        "organism": "fleet-instinct:critique-budget",
+        "tier": "sclerotic"
+      },
+      {
+        "t": "distillations",
+        "id": "9",
+        "organism": "fleet-instinct:verify-from-outside",
+        "tier": "differentiated"
+      },
+      {
+        "t": "distillations",
+        "id": "10",
+        "organism": "fleet-instinct:ensign-watchlist",
+        "tier": "differentiated"
+      },
+      {
+        "t": "candidates",
+        "id": "2",
+        "organism": "fleet-instinct",
+        "tier": "fleet-instinct:honesty-gate"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "WNAM",
+      "served_by_colo": "SEA",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 1.1328
+      },
+      "duration": 1.1328,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 196608,
+      "rows_read": 115,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

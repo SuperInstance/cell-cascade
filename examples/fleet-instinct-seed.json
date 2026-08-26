@@ -1,0 +1,354 @@
+[
+  {
+    "id": "fleet-instinct",
+    "name": "Fleet Instinct — the mined conversational reflexes as one organism",
+    "kind": "mined-reflex-organism",
+    "description": "The corpus's clearest finding, seeded: the fleet's strongest reflexes are CONVERSATIONAL, not musical. Six cells grown from the 2026-08-25 reflex-mining report — sacred-space (declared space is honored or asked-into, never assumed), honesty-gate (claims resolve to artifacts or the gap is declared in the artifact), room-entry (enter at or below the room's established floor), critique-budget (one ask per iteration, bounded ranked critiques), verify-from-outside (a system reporting its own success is not evidence), and the ensign-watchlist (8 failure signatures as watch rules). The two closed laws sclerosed; the four that must GROW stay differentiated so a table miss escalates to the germ line and becomes a distillation candidate — the growth loop, not scar tissue.",
+    "evidence_ref": "plainsong-mcp/docs/reflex-mining-report.md (The Ideation Lane, 2026-08-25 — 6 ensemble session logs + BUILD-JOURNAL, 10-stitch stitch-log + GATE1, 3 cross-model seminar critiques + architect response, cell-cascade v0.2 verification; cross-checked against the 4 seeded organisms — everything here is NEW)",
+    "seed": {
+      "organism": "fleet-instinct",
+      "cells": [
+        {
+          "id": "fleet-germ",
+          "name": "fleet-germ-line",
+          "tier": "totipotent",
+          "role": "germ line — full model + the fleet's conversational DNA; answers escalations from the four growing cells",
+          "sheet": {
+            "dna": "the fleet's conversational instincts, mined not invented: honor declared space, declare gaps never simulate past them, calibrate under the room's floor, bound every critique, verify from outside, never grade your own homework",
+            "model": {
+              "provider": "zai",
+              "model": "glm-5.3",
+              "system_prompt": "You are fleet-germ, the germ line of the fleet-instinct organism. You inherit the fleet's conversational instincts: honor declared space (entering requires asking — a question, not an assumption); declare gaps, never simulate past them (INEXPRESSIBLE and not CONVERGED are written into the artifact); calibrate under the room's established floor; bound critiques (one ask per iteration, ranked and directional, never a laundry list); verify from outside — a system reporting its own success is not evidence; never grade your own homework. Answer IN THE CHILD'S SCOPE of fate: your answer will be recorded as a distillation candidate — the hole the child's rule table should grow into — so answer with the shape of a rule, terse and checkable. Evidence claims must resolve to artifacts; demonstrated vs aspirational counted separately. A named risk is not a gated risk: nothing named-then-buried.",
+              "max_tokens": 3072,
+              "temperature": 0.4,
+              "max_tokens_note": "reasoning models spend completion tokens thinking before they write — the 1024 default yielded an empty answer on the first live escalation (signal 78, 2026-08-25); cortex_plug learned the same lesson"
+            },
+            "mined": {
+              "observed_count": 49,
+              "observed_count_note": "6+8+5+16+6 reflex instances + 8 failure-signature rows — arithmetic on the report's own per-reflex counts, not a new claim",
+              "sources": [
+                "plainsong-mcp/docs/reflex-mining-report.md — the zygote inherits everything its children cite; the germ line is the aggregate of the mining, not a new observation"
+              ],
+              "report_ref": "plainsong-mcp/docs/reflex-mining-report.md (Parts 1-4)"
+            }
+          }
+        },
+        {
+          "id": "sacred-space",
+          "name": "sacred-space-honor",
+          "tier": "sclerotic",
+          "from": "fleet-germ",
+          "role": "cue-reflex — a declared space is honored by default; entering it is a question, not an assumption",
+          "sheet": {
+            "law": "when a player explicitly declares a space empty ('bar 9 is yours', 'no fill over the final root'), every later entrant honors it — entering at all requires asking permission, and the ask is a question, not an assumption",
+            "mined": {
+              "observed_count": 6,
+              "agents": 4,
+              "violations": 0,
+              "permission_asks": 1,
+              "sources": [
+                "BUILD-JOURNAL.md — bassist declares (TO THE DRUMMER): bar 9 almost empty, breathe around bar 16, no fill over the root",
+                "BUILD-JOURNAL.md — drummer honors + re-declares: 'Bar 16 is yours — kick on your root, ride letting ring, no fill, I promise'; bar 9 just ride on 1, one brush swirl on 3",
+                "BUILD-JOURNAL.md — pianist honors + asks: 'if you want bar 9 completely naked, say so and I'll lift it'",
+                "BUILD-JOURNAL.md — vocal chair honors the space AND the pianist's floor, answers the question: 'keep the dyad — floored, not naked'",
+                "log.jsonl v5 'bar 9 left open for the bassist', v6 'no fill over bar 16'"
+              ],
+              "report_ref": "reflex-mining-report.md #1 SACRED-SPACE-HONOR — strongest signal in the corpus"
+            },
+            "rules": [
+              {
+                "when": { "kind": "declare-space" },
+                "respond": { "ack": "HONORED", "confirm_honor": true, "law": "space recorded — honored by default from this instant", "evidence": "6 decisions by 4 agents, 16 bars, zero violations" }
+              },
+              {
+                "when": { "kind": "enter-space" },
+                "respond": { "ack": "ASK-FIRST", "law": "a declared space is entered only by permission; the ask is a question, not an assumption", "evidence": "the one permission-ask in the corpus: 'if you want bar 9 completely naked, say so and I'll lift it' — answered with reasoning" }
+              },
+              {
+                "when": { "kind": "space-question" },
+                "respond": { "ack": "ANSWERED-WITH-REASON", "law": "boundary questions get answers that carry a reason; floored vs naked is the legal vocabulary", "evidence": "'keep the dyad — floored, not naked'" }
+              }
+            ]
+          },
+          "cost_per_call": 0,
+          "latency_ms": 1,
+          "plasticity": 0.05
+        },
+        {
+          "id": "honesty-gate",
+          "name": "honesty-gate",
+          "tier": "differentiated",
+          "from": "fleet-germ",
+          "role": "rule — any convergence/capability/citation claim must be resolvable; the gap is declared IN the artifact, never smoothed over. Misses escalate to the germ line",
+          "sheet": {
+            "law": "when a capability is structurally unavailable or convergence hasn't happened, say so in the artifact itself — never simulate past it. Mechanically checkable at write time: any claim must resolve (artifact exists; demonstrated vs aspirational counted separately)",
+            "mined": {
+              "observed_count": 8,
+              "contexts": 5,
+              "count_provenance": "8 instances across 5 contexts is THE MINING REPORT'S OWN COUNT — this sheet carries the report's evidence bullets verbatim and does not re-count them",
+              "sources": [
+                "BUILD-JOURNAL.md (Duke R2, R4)",
+                "stitch/GATE1-REPORT.md (honesty ledger)",
+                "seminar-critique-glm52.md §B5 + seminar-response.md (the three-readings catch and fix)",
+                "cell-cascade docs/v0.2-live-verification.md (boundary honest; scar tissue not silent guessing; cost null)"
+              ],
+              "evidence_bullets": [
+                "Duke R2: 'INEXPRESSIBLE from the voice: intra-bar per-note dynamics and swing... HONEST GAP declared: not CONVERGED; best take = version 4' (BUILD-JOURNAL)",
+                "Duke R4: 'syncopation requires a specific attack pattern I cannot reliably reproduce by intuition... Stopping here — 4 rounds, the gains are diminishing' (BUILD-JOURNAL, ROUND 4)",
+                "Seamstress GATE1 honesty ledger: 'The grower did not learn.... The eye is a function, not a model... The plateau is real' — three named limits in one document (GATE1-REPORT.md)",
+                "GLM-5.2 critic catches the anti-pattern: B5 'three readings' claimed, one played → architect fixes to 'one-of-three demonstrated, two-aspirational, unproven on the sheet' (seminar-critique-glm52.md §B5, seminar-response.md)",
+                "Cell-cascade v0.2 itself: boundary answers 'model-call-required — the boundary stays honest'; rule-miss is scar tissue, 'not silent guessing'; cost_estimate_usd: null 'honest: tokens logged, cost not guessed' (v0.2-live-verification.md) — three honest answers in one system"
+              ],
+              "report_ref": "reflex-mining-report.md #2 HONEST-GAP-DECLARATION"
+            },
+            "myelin_note": "the capability-claim path count (8) aggregates all mined honesty instances across claim/gap flavors — the report does not split them by kind, so neither does this counter",
+            "rules": [
+              {
+                "when": { "kind": "capability-claim" },
+                "respond": { "verdict": "CHECK", "must": "claim resolves to an artifact; demonstrated vs aspirational counted separately", "on_fail": "DECLARE-GAP — write the gap into the artifact itself, never simulate past it", "evidence": "'three readings' claimed, one played → 'one-of-three demonstrated, two-aspirational, unproven on the sheet'" }
+              },
+              {
+                "when": { "kind": "convergence-claim" },
+                "respond": { "verdict": "CHECK", "must": "convergence is demonstrated, not narrated", "on_fail": "'not CONVERGED' written into the journal is the honest state; stopping at diminishing returns was a correct stop", "evidence": "Duke R2 'HONEST GAP declared: not CONVERGED'; R4 stopped at 4 rounds" }
+              },
+              {
+                "when": { "kind": "declare-gap" },
+                "respond": { "verdict": "HONORED", "law": "a declared gap IS the artifact's integrity — INEXPRESSIBLE is a legal word", "evidence": "GATE1's three named limits in one document; v0.2's cost_estimate_usd: null" }
+              }
+            ]
+          },
+          "cost_per_call": 0.15,
+          "latency_ms": 300,
+          "plasticity": 0.3
+        },
+        {
+          "id": "room-entry",
+          "name": "room-floor-calibration",
+          "tier": "differentiated",
+          "from": "fleet-germ",
+          "role": "rule — a late entrant reads the room's established dynamic floor and enters at or below it; evaluated at join/first-write, fed by perception_trace",
+          "sheet": {
+            "law": "entry velocity ≤ the room's established mean; entry register outside the occupied tessitura; register and placement sit UNDER what's already playing — the room's accumulated quiet is a floor the entrant must not break",
+            "calibration_chain": "bass vel 66 behind the beat → drummer brushes 46, kick feathered, ride barely there → pianist shells 52, register e3-a3-c4 under the vocal's future space → vocalist enters sitting under the piano shells, behind the beat — strictly descending, every entry",
+            "mined": {
+              "observed_count": 5,
+              "count_note": "4 entries + 1 refusal-for-consistency (the report's own count)",
+              "sources": [
+                "BUILD-JOURNAL.md — the four entries (bass, drums, piano, vocal chair)",
+                "BUILD-JOURNAL.md vocal chair — declines all three lab readings (smoke 72-88 projected): 'anything projected would have broken the floor the rhythm section spent the whole conversation laying'",
+                "BUILD-JOURNAL.md bass v8 — rejects the counter-deal: 'pushing against a feathered brush ride at 96 would stick out of a line that sits behind the beat everywhere else'"
+              ],
+              "report_ref": "reflex-mining-report.md #3 ROOM-FLOOR-CALIBRATION"
+            },
+            "rules": [
+              {
+                "when": { "kind": "join" },
+                "respond": { "ack": "UNDER-THE-FLOOR", "law": "entry vel ≤ established mean; register outside occupied tessitura; sit under what's already playing", "floor_evidence": "66 → 46 → 52(under) — strictly descending", "evidence": "4 entries, each strictly below the room's mean; perception tools already measure this (velocity_mean per voice)" }
+              },
+              {
+                "when": { "kind": "lab-reading-offered" },
+                "respond": { "ack": "DECLINED", "law": "the room outranks the lab — projected readings that would break the established floor are declined", "evidence": "all three lab readings declined: 'anything projected would have broken the floor...'" }
+              },
+              {
+                "when": { "kind": "counter-offer" },
+                "respond": { "ack": "DECLINED", "law": "a counter-offer that sticks out of the line is declined for consistency with the established floor", "evidence": "'pushing against a feathered brush ride at 96 would stick out of a line that sits behind the beat everywhere else'" }
+              }
+            ]
+          },
+          "cost_per_call": 0.15,
+          "latency_ms": 300,
+          "plasticity": 0.3
+        },
+        {
+          "id": "critique-budget",
+          "name": "critique-budget-law",
+          "tier": "sclerotic",
+          "from": "fleet-germ",
+          "role": "sclerotic counter — one ask per iteration, bounded ranked critiques; no model needed to reject an 11-point list",
+          "sheet": {
+            "law": "every critique arrives bounded and ranked: one point when steering a growth loop, exactly 3 when reviewing a round, ≤5 ranked when reviewing a spec. Never a laundry list; never vague. A fleet-wide conversational law, practiced by every model that ever took the critic chair",
+            "mined": {
+              "observed_count": 16,
+              "count_note": "10 stitch critiques + 3 GAN-round critiques + 3 spec critiques — the report says '15+', the arithmetic says 16",
+              "models": 4,
+              "sources": [
+                "stitch-log.jsonl — 'ONE POINT' in every one of 10 stitch critiques, each naming the largest normalized gap in feature language",
+                "GATE1-REPORT.md — 'Each stitch it hears ONE point of critique and deepens ONE layer'",
+                "BUILD-JOURNAL — Duke blind critic: exactly 3 ranked points per round, 3 rounds (R2 revision 'per critic, 3 points'; HARSH CRITIC PASS 2)",
+                "seminar-critique-glm52.md — 'max 5 points per spec, ranked, tagged NEW or REFINED, each directional'",
+                "seminar-critique-turbo.md — shrinks its own critique to a minimal ship plan"
+              ],
+              "report_ref": "reflex-mining-report.md #4 CRITIQUE-BUDGET-LAW"
+            },
+            "rules": [
+              {
+                "when": { "kind": "critique", "payload_equals": { "scope": "growth-loop" } },
+                "respond": { "ack": "ROGER", "points": 1, "law": "ONE point — the largest normalized gap, in feature language; the receiver deepens one layer per point", "evidence": "10/10 stitch critiques; the grower hears ONE point and deepens ONE layer" }
+              },
+              {
+                "when": { "kind": "critique", "payload_equals": { "scope": "gan-round" } },
+                "respond": { "ack": "ROGER", "points": 3, "ranked": true, "law": "exactly 3 ranked points per round", "evidence": "Duke blind critic, 3 rounds, 3 ranked points each" }
+              },
+              {
+                "when": { "kind": "critique", "payload_equals": { "scope": "spec-review" } },
+                "respond": { "ack": "ROGER", "points_max": 5, "ranked": true, "tags": ["NEW", "REFINED"], "law": "max 5 points per spec, ranked, each tagged NEW or REFINED, each directional", "evidence": "GLM-5.2 seminar protocol" }
+              },
+              {
+                "when": { "kind": "critique" },
+                "respond": { "ack": "ROGER", "points": 1, "law": "one ask per iteration; never a laundry list; never vague — unscoped critique defaults to the growth-loop budget", "evidence": "fleet-wide law, 15+ bounded critiques across 4 models" }
+              }
+            ]
+          },
+          "cost_per_call": 0,
+          "latency_ms": 1,
+          "plasticity": 0.05
+        },
+        {
+          "id": "verify-from-outside",
+          "name": "verify-from-outside",
+          "tier": "differentiated",
+          "from": "fleet-germ",
+          "role": "ensign-watch — the green-tick trap reflex: internal success signals are flagged, never trusted as ship verdicts. 'Outside enough' is judgment: escalates",
+          "sheet": {
+            "law": "a system reporting its own success is not evidence. Ship verdicts come only from outside the system that did the work: the package index itself, a blind critic, a fresh clean install, a soak in production",
+            "outside_sources_that_count": ["the package index itself (PyPI)", "a blind critic (blind BY CONSTRUCTION)", "a fresh clean install / clean venv", "a production soak"],
+            "mined": {
+              "observed_count": 6,
+              "sources": [
+                "plainsong 1.5.0: 'The green-tick trap was real: workflow had gone green at 13:35 but PyPI verification is the only trusted verdict' — verified end-to-end from a clean venv (memory 2026-08-25, releases)",
+                "memory, Night 9 FLASH: 'verification-from-outside finally felt cheaper than hope'",
+                "duke-lab-r3/REPORT.md — critic blind by construction: notation+features+MIDI evidence only",
+                "GATE1-REPORT.md — eye blind by construction: receives only take.song + take-features.json, never the grower's reasoning",
+                "seminar-critique-claude-sonnet.md S-P3 ADOPTED: 'a spec cannot conjure independence, only require it'",
+                "memory, yard-band skeleton — negative case that proves it: WSL2 wrangler dev 'is a liar for clock science — production only'; the soak was accepted only after production verification"
+              ],
+              "report_ref": "reflex-mining-report.md #5 VERIFY-FROM-OUTSIDE"
+            },
+            "rules": [
+              {
+                "when": { "kind": "green-tick-claim" },
+                "respond": { "verdict": "FLAGGED", "verify": "against-source", "law": "internal pipeline green / self-reported success is not evidence — verify against a source OUTSIDE the system that did the work", "outside_sources": ["package index itself", "blind critic", "fresh clean install", "production soak"], "evidence": "workflow green at 13:35, PyPI was the only trusted verdict" }
+              },
+              {
+                "when": { "kind": "ship-claim" },
+                "respond": { "verdict": "FLAGGED", "verify": "external-artifact-required", "law": "no ship claim without an external verification artifact; 'outside enough' is the ensign's judgment — this escalates", "evidence": "'a spec cannot conjure independence, only require it' (S-P3, ADOPTED)" }
+              }
+            ]
+          },
+          "cost_per_call": 0.15,
+          "latency_ms": 300,
+          "plasticity": 0.3
+        },
+        {
+          "id": "ensign-watchlist",
+          "name": "ensign-watchlist",
+          "tier": "differentiated",
+          "from": "fleet-germ",
+          "role": "the failure-signature catalog — 8 watch rules from the mining report's Part 4 table. Known signatures answer on sight; NEW signatures must arrive by escalation → distillation candidate → resolve (the table grows; a miss is a candidate, not scar tissue)",
+          "sheet": {
+            "law": "these are the fleet's observed failure signatures, each with its watch rule. The catalog is seeded OPEN (differentiated) on purpose: a sclerotic catalog would turn new-signature reports into scar tissue instead of growth",
+            "enforcement_boundary": {
+              "honest_gap": "five of the eight rows (tag-commit-drift, obligations-void, env-rot, blind-steering, undeployed-work) need state OUTSIDE this organism to actually check — git tags, chair presence, environment liveness, perception traces, deploy queues. This cell FLAGS; the obligations ledger and external tooling ENFORCE",
+              "ledger_note": "reflexes #7 build-the-tool-dont-argue (wound healing / germ line), #9 perception-before-steering (needs perception_audit at fire time), #10 env-canary (belongs to band-clock, fires at session open) did not fit the cell model — named here so the gap is visible, not buried"
+            },
+            "mined": {
+              "observed_count": 8,
+              "count_note": "8 signature ROWS; per-row instance counts live inside each rule's evidence",
+              "sources": ["reflex-mining-report.md PART 4 — FAILURE SIGNATURE TABLE (ensign watch candidates)"],
+              "report_ref": "reflex-mining-report.md Part 4"
+            },
+            "rules": [
+              {
+                "when": { "kind": "spec-lie" },
+                "respond": { "ack": "WATCH", "watch_rule": "any capability/lineage claim must link a resolvable artifact; demonstrated vs aspirational counted separately", "evidence": "'three readings' (one played) — B5; clock 'lineage, verbatim' that never ran — C1; task brief citing nonexistent duke-lab/REPORT.md" }
+              },
+              {
+                "when": { "kind": "green-tick-trap" },
+                "respond": { "ack": "WATCH", "watch_rule": "no ship claim without external verification artifact — internal success signals are never ship verdicts", "delegates_to": "fleet-instinct:verify-from-outside", "evidence": "PyPI workflow green at 13:35, unverified until the external check" }
+              },
+              {
+                "when": { "kind": "tag-commit-drift" },
+                "respond": { "ack": "WATCH", "watch_rule": "tags must point at commits carrying the workflow; check branch before 'pushed' claims", "evidence": "plainsong v1.0.1 tag on pre-#8 commit → 422, fixed by moving the tag; shoal imagery stranded on non-default branch", "enforcement": "needs git state — flag only, obligations ledger enforces" }
+              },
+              {
+                "when": { "kind": "obligations-void" },
+                "respond": { "ack": "WATCH", "watch_rule": "obligations pair with chair presence — leave-with-open-obligations is a flagged event", "evidence": "drummer's last write 16:20, trade declared 16:23:59 — 'nobody was late; nobody was there'", "enforcement": "needs chair/presence state — flag only, engine §3.4 carries the rule" }
+              },
+              {
+                "when": { "kind": "env-rot" },
+                "respond": { "ack": "WATCH", "watch_rule": "env canary at session open — compile one bar, cost 0; verify the shared environment renders before any agent writes", "evidence": "numpy missing broke render for everyone mid-session; WSL2 wrangler dev clock lies", "enforcement": "canary belongs to band-clock (registry #10) — flag only here" }
+              },
+              {
+                "when": { "kind": "blind-steering" },
+                "respond": { "ack": "WATCH", "watch_rule": "perception_audit mandatory before any steering claim — never steer on features unaudited for coupling/liveness", "evidence": "velocity_std ~0.11 inert for everything (GATE1 surprise #1); vocal-lab 8 channels collapse to 1 coupled group; duke R2 dynamics was ONE dial (r=0.91)", "enforcement": "needs perception_trace at fire time — flag only, pre-join check beside room-entry is the fit (registry #9)" }
+              },
+              {
+                "when": { "kind": "undeployed-work" },
+                "respond": { "ack": "WATCH", "watch_rule": "deploy-gate queue as a visible artifact, not memory — built+pushed is not shipped", "evidence": "fresh catch built+pushed NOT deployed (Casey's gate, by design); 6 essays awaiting deploy; radio amendment awaiting merge", "enforcement": "needs the deploy queue — flag only" }
+              },
+              {
+                "when": { "kind": "grinding-past-returns" },
+                "respond": { "ack": "WATCH", "watch_rule": "distance-curve flattening triggers stop-or-escalate, not another identical pass; the plateau's first response is a question, not a dial crank", "evidence": "Duke R1-R4 syncopation stuck 2/16 bars across two rounds ('cannot reliably reproduce by intuition'); seamstress plateau stitches 5-10; stitch-10 wiggle +0.012", "enforcement": "'when to quit' is judgment over the distance curve — escalates to the germ line (registry #8)" }
+              }
+            ]
+          },
+          "cost_per_call": 0.15,
+          "latency_ms": 300,
+          "plasticity": 0.3
+        }
+      ],
+      "myelin": [
+        { "from": "fleet-germ", "to": "sacred-space", "kind": "declare-space", "fire_count": 6, "error_count": 0, "tier_promoted_to": null },
+        { "from": "fleet-germ", "to": "honesty-gate", "kind": "capability-claim", "fire_count": 8, "error_count": 0, "tier_promoted_to": null },
+        { "from": "fleet-germ", "to": "room-entry", "kind": "join", "fire_count": 4, "error_count": 0, "tier_promoted_to": null },
+        { "from": "fleet-germ", "to": "room-entry", "kind": "counter-offer", "fire_count": 1, "error_count": 0, "tier_promoted_to": null },
+        { "from": "fleet-germ", "to": "critique-budget", "kind": "critique", "fire_count": 16, "error_count": 0, "tier_promoted_to": null },
+        { "from": "fleet-germ", "to": "verify-from-outside", "kind": "green-tick-claim", "fire_count": 6, "error_count": 0, "tier_promoted_to": null }
+      ],
+      "distillations": [
+        {
+          "cell": "sacred-space",
+          "from_tier": "totipotent",
+          "to_tier": "sclerotic",
+          "evidence_ref": "reflex-mining-report.md #1 (BUILD-JOURNAL.md, log.jsonl)",
+          "gardener_verdict": "strongest signal in the corpus: 6 decisions by 4 agents, zero violations, one permission-ask — the trigger is a formal declarative act, the response deterministic, so no model at fire time. 6 observed fires sit below the 25 auto-threshold: fate set by gardener on the report's own note that this reflex crossed it in spirit — every occurrence in the corpus was clean. tier_promoted_to stays null; the counter is honest"
+        },
+        {
+          "cell": "honesty-gate",
+          "from_tier": "totipotent",
+          "to_tier": "differentiated",
+          "evidence_ref": "reflex-mining-report.md #2 (BUILD-JOURNAL, GATE1-REPORT.md, seminar-critique-glm52.md §B5, v0.2-live-verification.md)",
+          "gardener_verdict": "8 instances, 5 contexts: the check is mechanical at write time (claim resolvable; demonstrated vs aspirational split) but misses need judgment — the report names the germ line as the escalation target. Held differentiated so the table GROWS: miss → escalation → candidate → resolved rule"
+        },
+        {
+          "cell": "room-entry",
+          "from_tier": "totipotent",
+          "to_tier": "differentiated",
+          "evidence_ref": "reflex-mining-report.md #3 (BUILD-JOURNAL.md, log v5/v10)",
+          "gardener_verdict": "4 strictly-descending calibrations + 1 loud refusal: the floor is computable from room state at join (entry vel ≤ established mean) — a differentiated rule fed by perception_trace, sibling of band-clock's commit rule: clock checks WHEN, this checks HOW LOUD"
+        },
+        {
+          "cell": "critique-budget",
+          "from_tier": "totipotent",
+          "to_tier": "sclerotic",
+          "evidence_ref": "reflex-mining-report.md #4 (stitch-log.jsonl, GATE1-REPORT.md, BUILD-JOURNAL, seminar-critique-glm52.md)",
+          "gardener_verdict": "15+ bounded critiques across 4 models — the BUDGET is a counter: no model needed to reject an 11-point list (sclerotic half). Ranking/directionality stays differentiated with the critic cells. 16 observed fires, 0 errors; fate set by gardener, tier_promoted_to null — the counter is honest about the threshold"
+        },
+        {
+          "cell": "verify-from-outside",
+          "from_tier": "totipotent",
+          "to_tier": "differentiated",
+          "evidence_ref": "reflex-mining-report.md #5 (memory 2026-08-25 releases + Night 9 FLASH, duke-lab-r3, GATE1-REPORT.md, seminar-critique-claude-sonnet.md S-P3)",
+          "gardener_verdict": "6 instances: the FLAG is deterministic (green-tick ≠ verdict — table hit, cost 0) but 'what counts as outside enough' needs the model — ensign-watch by the report's own tiering. Misses escalate to fleet-germ"
+        },
+        {
+          "cell": "ensign-watchlist",
+          "from_tier": "totipotent",
+          "to_tier": "differentiated",
+          "evidence_ref": "reflex-mining-report.md PART 4 — FAILURE SIGNATURE TABLE",
+          "gardener_verdict": "8 failure signatures as watch rules. Seeded differentiated ON PURPOSE: known signatures answer on sight (table), but the catalog must grow — a new-signature report misses the table, escalates to the germ line, and becomes a distillation candidate. Sclerotic here would make growth scar tissue. Five rows honestly flagged as flag-only (enforcement needs external state); #7/#9/#10 named in the sheet as reflexes that did not fit the cell model"
+        }
+      ]
+    }
+  }
+]

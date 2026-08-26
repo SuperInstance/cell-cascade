@@ -158,6 +158,33 @@ from today's sessions, and distillation provenance:
   GATE-PASS with the distance curve 7.14σ → 1.69σ — the take landed *inside*
   the canon neighborhood. Evidence: `GATE1-REPORT.md`.
 
+`npm run seed` also loads `examples/fleet-instinct-seed.json` (2026-08-25
+night watch):
+
+- **`fleet-instinct`** (*mined-reflex-organism*) — the corpus's clearest
+  finding seeded: the fleet's strongest reflexes are **conversational, not
+  musical**. Six cells grown from `plainsong-mcp/docs/reflex-mining-report.md`,
+  every sheet carrying its mined evidence (observed count, sources):
+  **sacred-space** (sclerotic; declared space honored or asked-into — 6
+  decisions, 4 agents, zero violations), **honesty-gate** (differentiated;
+  claims resolve to artifacts or the gap is declared in the artifact — 8
+  instances, 5 contexts, provenance pinned to the report's own count),
+  **room-entry** (differentiated; enter at or below the room's established
+  floor — the strictly-descending chain 66 → 46 → 52), **critique-budget**
+  (sclerotic counter; one ask per iteration, exactly 3 per round, ≤5 per
+  spec — 15+ bounded critiques across 4 models), **verify-from-outside**
+  (differentiated ensign-watch; a system reporting its own success is not
+  evidence — 6 instances), and the **ensign-watchlist** (differentiated ON
+  PURPOSE: all 8 failure signatures answer on sight, but a new-signature
+  report escalates to the germ line and becomes a distillation candidate —
+  the table grows; sclerotic here would make growth scar tissue). The two
+  closed laws sclerosed by gardener distillation; the myelin counters carry
+  the real observed counts — nothing claims a promotion it didn't earn.
+  Five watchlist rows are honestly flag-only (enforcement needs external
+  state — the obligations ledger's job), and the reflexes that didn't fit
+  the cell model (#7 build-the-tool, #9 perception-before-steering, #10
+  env-canary) are named in the sheet, not buried.
+
 ## Add YOUR OWN decomposition
 
 When an experiment goes well, save it:

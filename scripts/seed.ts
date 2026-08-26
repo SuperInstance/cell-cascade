@@ -28,12 +28,19 @@ async function call(method: string, path: string, body?: unknown): Promise<{ sta
 }
 
 async function main(): Promise<void> {
-  const text = readFileSync(join(here, '..', 'examples', 'seed.json'), 'utf8');
-  const { examples, errors } = parseExampleFile(text);
-  if (errors.length) {
-    console.error('seed file failed validation:');
-    for (const e of errors) console.error(`  ✗ ${e}`);
-    process.exit(1);
+  // the library: the four original decompositions + the mined fleet-instinct
+  // organism (examples/fleet-instinct-seed.json, seeded 2026-08-25 night watch)
+  const files = ['seed.json', 'fleet-instinct-seed.json'] as const;
+  const examples: Example[] = [];
+  for (const f of files) {
+    const text = readFileSync(join(here, '..', 'examples', f), 'utf8');
+    const { examples: parsed, errors } = parseExampleFile(text);
+    if (errors.length) {
+      console.error(`${f} failed validation:`);
+      for (const e of errors) console.error(`  ✗ ${e}`);
+      process.exit(1);
+    }
+    examples.push(...(parsed as Example[]));
   }
 
   // liveness
@@ -88,6 +95,30 @@ async function main(): Promise<void> {
   });
   if (missing.status === 200 && missing.data.fired?.mode === 'table-miss') {
     console.log(`  ✓ scar-tissue detection: unknown cue → table-miss logged as error (myelin errors ${missing.data.myelin.error_count})`);
+  }
+
+  // fleet-instinct live proofs: the mined conversational reflexes fire at cost 0
+  const declare = await call('POST', '/signal', {
+    from: 'fleet-instinct:fleet-germ', to: 'fleet-instinct:sacred-space', kind: 'declare-space',
+    payload: { bar: 9, declared_by: 'bassist', law: 'almost empty, breathe around bar 16' },
+  });
+  if (declare.status === 200 && declare.data.fired?.mode === 'table' && declare.data.fired?.response?.ack === 'HONORED') {
+    console.log(`  ✓ live fire: fleet-instinct declare-space → HONORED (confirm-honor), cost 0 (myelin fires ${declare.data.myelin.fire_count})`);
+  } else {
+    console.error(`  ✗ declare-space fire failed: ${declare.status} ${JSON.stringify(declare.data)}`);
+    process.exit(1);
+  }
+  const greenTick = await call('POST', '/signal', {
+    from: 'fleet-instinct:fleet-germ', to: 'fleet-instinct:verify-from-outside', kind: 'green-tick-claim',
+    payload: { claim: 'CI workflow green', source: 'internal' },
+  });
+  if (greenTick.status === 200 && greenTick.data.fired?.mode === 'table'
+      && greenTick.data.fired?.response?.verdict === 'FLAGGED'
+      && greenTick.data.fired?.response?.verify === 'against-source') {
+    console.log(`  ✓ live fire: fleet-instinct green-tick-claim → FLAGGED / verify-against-source (myelin fires ${greenTick.data.myelin.fire_count})`);
+  } else {
+    console.error(`  ✗ green-tick fire failed: ${greenTick.status} ${JSON.stringify(greenTick.data)}`);
+    process.exit(1);
   }
 
   console.log('seed complete.');
