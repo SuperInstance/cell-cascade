@@ -187,6 +187,18 @@ export interface HealthSnapshot {
     warning: boolean;
     note: string;
   };
+  // v0.3: THE SERVE-SPLIT WATCH — per signal kind, how often the organism
+  // served from cost-0 tables vs the model seam. The critic's split
+  // (table ≫ seam) is the proof judgment is distilling, not ballooning.
+  serve_split: {
+    window: number;
+    by_kind: Record<string, {
+      signals: number; table: number; model: number; escalated: number; error: number;
+      table_pct: number; model_pct: number;
+    }>;
+    worst_offender: string | null;
+    note: string;
+  };
   avg_cost_per_call: number;         // mean across ACTIVE cells
   myelin_paths: number;
   sclerosis_warnings: Array<{ cell_id: string; name: string; tier: Tier; note: string }>;
@@ -228,6 +240,7 @@ export function healthSnapshot(
     model: 0, table: 0, escalated: 0, model_required: 0, error: 0,
   };
   let germServing = 0; // model calls landing on totipotent targets + escalations
+  const kindSplit = new Map<string, { signals: number; table: number; model: number; escalated: number; error: number }>();
   for (const s of signals) {
     const target = byId.get(s.to_cell);
     if (!target) continue;
@@ -239,10 +252,42 @@ export function healthSnapshot(
     else if (m === 'table-miss' || m === 'model-error' || m === 'escalation-failed') modeCounts.error++;
     if (m === 'model' && target.tier === 'totipotent') germServing++;
     if (m === 'escalated') germServing++;
+    // v0.3: the serve-split ledger, per signal kind
+    const k = kindSplit.get(s.kind) ?? { signals: 0, table: 0, model: 0, escalated: 0, error: 0 };
+    k.signals++;
+    if (m === 'table') k.table++;
+    else if (m === 'model') k.model++;
+    else if (m === 'escalated') k.escalated++;
+    else k.error++;
+    kindSplit.set(s.kind, k);
   }
   const serve_modes_pct: Record<string, number> = {};
   for (const [k, v] of Object.entries(modeCounts)) serve_modes_pct[k] = pct(v, total);
   const totipotent_serve_pct = pct(germServing, total);
+
+  // v0.3: serve-split — table vs seam per signal kind
+  const by_kind: HealthSnapshot['serve_split']['by_kind'] = {};
+  for (const [kind, k] of kindSplit) {
+    by_kind[kind] = {
+      ...k,
+      table_pct: pct(k.table, k.signals),
+      model_pct: pct(k.model, k.signals),
+    };
+  }
+  const worst = [...kindSplit.entries()]
+    .filter(([kind, k]) => kind !== 'tick' && k.signals >= 2)
+    .sort((a, b) => b[1].model / b[1].signals - a[1].model / a[1].signals)[0];
+  const worst_offender = worst ? worst[0] : null;
+  const serve_split: HealthSnapshot['serve_split'] = {
+    window: total,
+    by_kind,
+    worst_offender,
+    note: total === 0
+      ? 'no recent signals — nothing to split'
+      : worst
+        ? `serve split by kind: ${[...kindSplit.entries()].map(([kind, k]) => `${kind} ${pct(k.table, k.signals)}% table / ${pct(k.model, k.signals)}% seam`).join(' · ')} — ${worst[0]} leans hardest on the seam (${pct(worst[1].model, worst[1].signals)}%)`
+        : `serve split by kind: ${[...kindSplit.entries()].map(([kind, k]) => `${kind} ${pct(k.table, k.signals)}% table / ${pct(k.model, k.signals)}% seam`).join(' · ')}`,
+  };
   const cost_tumor = {
     threshold_pct: COST_TUMOR_THRESHOLD_PCT,
     totipotent_serve_pct,
@@ -305,6 +350,7 @@ export function healthSnapshot(
     serve_modes_pct,
     totipotent_serve_pct,
     cost_tumor,
+    serve_split,
     avg_cost_per_call: active.length
       ? Math.round((active.reduce((a, c) => a + c.cost_per_call, 0) / active.length) * 1000) / 1000
       : 0,

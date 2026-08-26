@@ -14,6 +14,11 @@
 //                                      with escalated_from + a DISTILLATION
 //                                      CANDIDATE (the hole the organism
 //                                      should grow into).
+//   multipotent      rule table hit  -> 'table'      (v0.3: the critic's
+//                    (with rules)       distilled judgment, cost 0)
+//                    rule table miss -> 'model' wearing its OWN scoped
+//                                      prompt (tendency first, seam second —
+//                                      the serve-split that shrinks the tumor)
 //   totipotent/      sheet.model config + worker env -> 'model' (real call,
 //   multipotent      tokens/latency/cost logged)
 //                    either side missing -> 'model-required' (honest boundary)
@@ -267,8 +272,26 @@ export async function fireSignal(
         }
       }
     }
+  } else if (target.tier === 'multipotent' && rules.length > 0) {
+    // ── v0.3: multipotent tissue with a forming table — TENDENCY FIRST,
+    //    SEAM SECOND (the critic cell's serve-split). A table hit is the
+    //    distilled judgment: cost 0, ~1ms, no model. A miss is not an
+    //    escalation upward (a scoped model IS this cell's expression) —
+    //    the cell consults its own model config wearing its own prompt.
+    //    This is what lets judgment distill: repeated clear verdicts hit
+    //    the table forever; only genuine ambiguity pays the seam.
+    const m = matchRule(rules, input.kind, input.payload);
+    if (m.hit) {
+      mode = 'table'; ok = true; response = m.response!;
+      costPerCall = 0; latencyMs = 1;
+    } else {
+      const via = await serveViaModel(store, target, input, 'rule table missed — the scoped model adjudicates');
+      ({ ok, mode, response, cost_per_call: costPerCall, model_log: modelLog, answered_by: answeredBy } = via);
+      if (mode === 'model-required') ok = false; // the boundary stays honest: NOT served
+      latencyMs = modelLog?.latency_ms ?? latencyMs;
+    }
   } else {
-    // ── totipotent / multipotent / ruleless differentiated: the bridge
+    // ── totipotent / ruleless multipotent & differentiated: the bridge
     const via = await serveViaModel(store, target, input);
     ({ ok, mode, response, cost_per_call: costPerCall, model_log: modelLog, answered_by: answeredBy } = via);
     latencyMs = modelLog ? modelLog.latency_ms : latencyMs;

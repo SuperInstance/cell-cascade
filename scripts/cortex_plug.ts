@@ -19,9 +19,13 @@
 import { mkdirSync, writeFileSync, appendFileSync, existsSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  bandleaderSheet, metronomeSheet, tickPayload, composePayload,
+  bandleaderSheet, metronomeSheet, tickPayload,
   extractNotationBars, assembleScore, mcpToolCall, parseMcpToolResult,
 } from '../src/cortex';
+import {
+  criticSheet, criticIntent, composeCycle, traceFromReport,
+  type CriticIntent, type SteeringHints, type TraceBar,
+} from '../src/critic';
 
 const env = process.env;
 const WORKER_URL = (env.WORKER_URL ?? 'http://localhost:8787').replace(/\/+$/, '');
@@ -34,6 +38,14 @@ const TEMPO = Number(env.TEMPO ?? 100);
 const BARS_PER = Math.max(1, Number(env.BARS_PER ?? 1));
 const STYLE = env.STYLE ?? '';
 const MODEL = env.MODEL ?? 'glm-5.3';
+const CRITIC_MODEL = env.CRITIC_MODEL ?? MODEL;
+// v0.3: GAN rounds per compose cycle (1 = compose blind, v0.2 semantics;
+// 2 = compose → critique → recompose-if-wounded; the default). Round 2 only
+// fires when the critic says REVISE — a bar that stands saves a model call.
+const GAN_ROUNDS = Math.max(1, Math.min(4, Number(env.GAN_ROUNDS ?? 2)));
+const INTENT: CriticIntent = (() => {
+  try { return criticIntent(env.INTENT ? JSON.parse(env.INTENT) : {}); } catch { return criticIntent(); }
+})();
 const ORG = env.ORGANISM ?? `cortex-plug-${new Date().toISOString().slice(11, 19).replace(/:/g, '')}`;
 const RUNS = env.RUNS_DIR ?? 'runs';
 
@@ -104,13 +116,21 @@ async function main(): Promise<void> {
     organism: ORG, name: 'bandleader', from_cell: zygote, role: 'the cortex — composes on the downbeat',
     tier: 'totipotent', sheet_patch: bandleaderSheet({ model: MODEL, style: STYLE }),
   });
-  const metroId = metro.child.id, bandId = band.child.id;
-  writeFileSync(join(runDir, 'organism.json'), JSON.stringify({ organism: ORG, zygote, metronome: metroId, bandleader: bandId, every: EVERY, changes: CHANGES, model: MODEL }, null, 2));
-  log(`├─ organism grown: zygote ${zygote} · metronome(sclerotic) ${metroId} · bandleader(totipotent) ${bandId}`);
+  const critic = await api<{ child: { id: string } }>('/cell', {
+    organism: ORG, name: 'critic', from_cell: zygote, role: 'the ear — judges the bars the bandleader wrote',
+    tier: 'multipotent', sheet_patch: criticSheet({ model: CRITIC_MODEL }),
+  });
+  const metroId = metro.child.id, bandId = band.child.id, criticId = critic.child.id;
+  writeFileSync(join(runDir, 'organism.json'), JSON.stringify({ organism: ORG, zygote, metronome: metroId, bandleader: bandId, critic: criticId, every: EVERY, changes: CHANGES, model: MODEL, critic_model: CRITIC_MODEL, gan_rounds: GAN_ROUNDS }, null, 2));
+  log(`├─ organism grown: zygote ${zygote} · metronome(sclerotic) ${metroId} · bandleader(totipotent) ${bandId} · critic(multipotent) ${criticId}`);
 
   // ── 2. the clock turns; the tissue works ───────────────────────────────
   const barLines: string[] = [];
   let tokens = 0, modelMs = 0, tableMs = 0, composes = 0, composeErrors = 0;
+  // v0.3 counters: the critic's serve-split and the GAN ledger
+  let cheapServes = 0, seamServes = 0, seamFailures = 0, critiques = 0;
+  let revisions = 0, earlyAccepts = 0, analyzeFailures = 0;
+  let carriedSteering: SteeringHints | null = null;
   for (let tick = 1; tick <= TICKS; tick++) {
     const tp = tickPayload(tick, EVERY);
     const fired = await api<Fired>('/signal', { from: 'clock', to: metroId, kind: 'tick', payload: tp });
@@ -121,38 +141,81 @@ async function main(): Promise<void> {
     if (action === 'compose') {
       const barIndex = composes;
       const recent = barLines.slice(-2);
-      const payload = composePayload({
+
+      // v0.3: ONE COMPOSE CYCLE = up to GAN_ROUNDS rounds through the ear.
+      // The loop lives in src/critic.ts (composeCycle); the driver supplies
+      // only IO: the worker's /signal and the MCP's analyze_features.
+      // Round 2+ fires only when the critic says revise — a bar that stands
+      // on round 1 saves a model call (that is the tumor going down).
+      const cycle = await composeCycle({
+        fireCompose: async payload => {
+          const thought = await api<Fired>('/signal', { from: metroId, to: bandId, kind: 'compose', payload });
+          const answer = String((thought.fired?.response as Record<string, unknown> | undefined)?.answer ?? '');
+          const round = payload.steering ? ((payload.steering as SteeringHints).from_round + 1) : 1;
+          jlog({ tick, compose: payload.bar_index, round, changes: payload.changes, mode: thought.mode, ok: thought.ok, tokens: thought.model_log?.total_tokens ?? null, latency_ms: thought.fired?.latency_ms ?? null, steered: Boolean(payload.steering), answer_head: answer.slice(0, 160) });
+          if (thought.mode === 'model-required') {
+            die(`compose ${payload.bar_index}: the boundary stayed honest — "${thought.mode}". Configure sheet.model + MODEL_BASE_URL/MODEL_KEY; nothing was faked.`);
+          }
+          if (thought.mode !== 'model' || !thought.ok) return { ok: false, mode: thought.mode, answer: '', latencyMs: thought.fired?.latency_ms ?? 0 };
+          tokens += thought.model_log?.total_tokens ?? 0;
+          modelMs += thought.fired?.latency_ms ?? 0;
+          return { ok: true, mode: thought.mode, answer, latencyMs: thought.fired?.latency_ms ?? 0 };
+        },
+        fireCritique: async payload => {
+          const serve = String(payload.serve);
+          const fired = await api<Fired>('/signal', { from: bandId, to: criticId, kind: 'critique', payload });
+          const answer = String((fired.fired?.response as Record<string, unknown> | undefined)?.answer ?? '');
+          jlog({ tick, critique: payload.bar_index, round: payload.round, serve, mode: fired.mode, ok: fired.ok, verdict: payload.verdict, latency_ms: fired.fired?.latency_ms ?? null });
+          critiques++;
+          if (serve === 'cheap') cheapServes++;
+          else { seamServes++; if (fired.mode !== 'model' || !fired.ok) seamFailures++; }
+          if (fired.mode === 'model' && fired.ok) {
+            tokens += fired.model_log?.total_tokens ?? 0;
+            modelMs += fired.fired?.latency_ms ?? 0;
+          }
+          return { ok: fired.ok && fired.mode === 'model', mode: fired.mode, answer };
+        },
+        analyze: async (acceptedSoFar, candidate) => {
+          const partial = assembleScore({ title: 'review', key: KEY, tempo: TEMPO }, [...acceptedSoFar, ...candidate]);
+          const res = await mcpCall('analyze_features', { content: partial, voice: 'piano' });
+          if (res.isError || res.text.startsWith('error:')) {
+            analyzeFailures++;
+            log(`├─ ✗ ear unavailable (analyze_features: ${res.text.slice(0, 120)}) — cycle degrades honestly to v0.2, no critique invented`);
+            return null;
+          }
+          try {
+            const trace = traceFromReport(JSON.parse(res.text));
+            return trace.slice(-candidate.length);
+          } catch { analyzeFailures++; return null; }
+        },
+      }, {
         barIndex, changes: CHANGES[barIndex % CHANGES.length], bars: BARS_PER,
-        key: KEY, tempo: TEMPO, recent,
+        recent, intent: INTENT, steering: carriedSteering, ganRounds: GAN_ROUNDS,
+        key: KEY, tempo: TEMPO,
+        extract: (reply, n) => extractNotationBars(reply, n).lines,
       });
-      const thought = await api<Fired>('/signal', { from: metroId, to: bandId, kind: 'compose', payload });
-      const answer = String((thought.fired?.response as Record<string, unknown> | undefined)?.answer ?? '');
-      jlog({
-        tick, compose: barIndex, changes: payload.changes, mode: thought.mode, ok: thought.ok,
-        tokens: thought.model_log?.total_tokens ?? null, latency_ms: thought.fired?.latency_ms ?? null,
-        answer_head: answer.slice(0, 160),
-      });
-      if (thought.mode === 'model-required') {
-        die(`compose ${barIndex}: the boundary stayed honest — "${thought.mode}". Configure sheet.model + MODEL_BASE_URL/MODEL_KEY; nothing was faked.`);
-      }
-      if (thought.mode !== 'model' || !thought.ok) {
+
+      const servedRounds = cycle.rounds.filter(r => r.bars.length > 0);
+      if (!servedRounds.length) {
         composeErrors++;
-        log(`├─ ✗ compose ${barIndex} (${payload.changes}) served "${thought.mode}" — logged, organism carries on`);
+        log(`├─ ✗ compose ${barIndex} served nothing — logged, organism carries on`);
         continue;
       }
       composes++;
-      tokens += thought.model_log?.total_tokens ?? 0;
-      modelMs += thought.fired?.latency_ms ?? 0;
-      const got = extractNotationBars(answer, BARS_PER);
-      if (!got.lines.length) {
-        composeErrors++;
-        log(`├─ ✗ compose ${barIndex}: model answered but zero notation lines survived the extractor — logged raw`);
-        writeFileSync(join(runDir, `raw-compose-${barIndex}.txt`), answer);
-        continue;
+      const final = servedRounds[servedRounds.length - 1];
+      barLines.push(...final.bars);
+      if (servedRounds.length > 1) revisions++; else earlyAccepts++;
+      carriedSteering = cycle.steering;   // the critique feeds the NEXT compose payload
+      log(`├─ tick ${String(tick).padStart(2)} · downbeat → compose ${String(barIndex).padStart(2)} (${String(CHANGES[barIndex % CHANGES.length]).padEnd(5)}) · ${servedRounds.length} round(s) · critic: ${final.critique?.verdict ?? 'unheard'}${final.seamFailed ? ' (seam answer unusable — the cheap verdict stood)' : ''}`);
+      for (const r of servedRounds) {
+        log(`│   r${r.round}${r.critique ? ` [${r.critique.verdict}${r.serve !== 'none' ? ` · ${r.serve}` : ''}]${r.accepted ? ' ✓' : ''}` : ' [ear unavailable]'}`);
+        log(`│   ${r.bars.join('\n│   ')}`);
+        if (r.critique && r.critique.verdict === 'revise') {
+          for (const o of r.critique.observations.filter(x => x.severity !== 'ok').slice(0, 3)) {
+            log(`│     ⌐ ${o.channel}: ${o.note}`);
+          }
+        }
       }
-      barLines.push(...got.lines);
-      log(`├─ tick ${String(tick).padStart(2)} · downbeat → compose ${String(barIndex).padStart(2)} (${String(payload.changes).padEnd(5)}) · ${thought.model_log?.completion_tokens ?? '?'} tok · ${thought.fired?.latency_ms ?? '?'}ms`);
-      log(`│   ${got.lines.join('\n│   ')}`);
     } else {
       log(`├─ tick ${String(tick).padStart(2)} · beat ${tp.beat} · wait`);
     }
@@ -160,7 +223,8 @@ async function main(): Promise<void> {
   }
 
   // ── 3. the score the organism wrote ────────────────────────────────────
-  log(`╰─ ${TICKS} ticks · ${composes} composes served by the cortex (${composeErrors} failed) · ${tokens} tokens · spine ${tableMs}ms / cortex ${modelMs}ms`);
+  log(`╰─ ${TICKS} ticks · ${composes} compose cycles served (${composeErrors} failed) · ${tokens} tokens · spine ${tableMs}ms / cortex+ear ${modelMs}ms`);
+  log(`  the ear: ${critiques} critiques — ${cheapServes} served by the frozen gate (cost 0), ${seamServes} through the seam${seamFailures ? ` (${seamFailures} seam failures, cheap verdict stood)` : ''} · ${revisions} revision round(s), ${earlyAccepts} stood on round 1`);
   if (!barLines.length) die('the organism wrote no bars — see tick-log.jsonl; nothing was faked');
   const title = `${ORG} — what the organism wrote`;
   const score = assembleScore({ title, key: KEY, tempo: TEMPO }, barLines);
@@ -190,20 +254,33 @@ async function main(): Promise<void> {
     tokens, model_ms: modelMs, table_ms: tableMs,
     changes: CHANGES, model: MODEL,
     compile: compiled.text.split('\n')[0],
+    gan: {
+      rounds_configured: GAN_ROUNDS,
+      critique_serve: {
+        critiques, cheap: cheapServes, seam: seamServes, seam_failures: seamFailures,
+        cheap_pct: critiques ? Math.round((cheapServes / critiques) * 1000) / 10 : null,
+        seam_pct: critiques ? Math.round((seamServes / critiques) * 1000) / 10 : null,
+      },
+      revision_rounds: revisions, early_accepts: earlyAccepts, analyze_failures: analyzeFailures,
+      intent: INTENT,
+    },
     health: {
       serve_modes_pct: health.serve_modes_pct ?? null,
       zero_cost_serve_pct: health.zero_cost_serve_pct ?? null,
       cost_tumor: health.cost_tumor ?? null,
+      serve_split: health.serve_split ?? null,
     },
     wiring: {
       spine: `clock →(tick)→ ${metroId} [sclerotic · rule table · cost 0]`,
       cortex: `${metroId} →(compose)→ ${bandId} [totipotent · model seam · ${MODEL}]`,
+      ear: `${bandId} →(critique)→ ${criticId} [multipotent · frozen gate cost 0 · seam ${CRITIC_MODEL} only on ambiguity]`,
+      loop: `compose → analyze_features → critique → steering → next compose payload (${GAN_ROUNDS} round cap)`,
       hands: `driver accumulates bars → plainsong MCP compile_score → MIDI`,
     },
   };
   writeFileSync(join(runDir, 'report.json'), JSON.stringify(report, null, 2));
   log(`  report: ${join(runDir, 'report.json')}`);
-  log(`\n  THE ORGANISM WROTE A TUNE — ${barLines.length} bars, spine kept time, cortex composed, hands rendered.`);
+  log(`\n  THE ORGANISM WROTE A TUNE — ${barLines.length} bars, spine kept time, cortex composed, the EAR judged ${critiques} time(s) at ${critiques ? Math.round((cheapServes / critiques) * 100) : 100}% cost 0.`);
 }
 
 main().catch(e => die(e instanceof Error ? e.message : String(e)));

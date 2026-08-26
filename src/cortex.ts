@@ -25,6 +25,8 @@
 
 // ── the bandleader's voice ──────────────────────────────────────────────────
 
+import { type SteeringHints } from './critic';
+
 export interface BandleaderVoice {
   style?: string;      // free text: the sound the organism wants
   model?: string;      // sheet.model.model (default glm-5.3, the fleet flag)
@@ -64,6 +66,12 @@ export function bandleaderSystemPrompt(voice: BandleaderVoice = {}): string {
     'breathes (not every 8th speaks), land some attacks off the beat.',
     'Register spread and rest ratio are the difference between a tune and',
     'an etude. One idea per bar; let the idea travel.',
+    '',
+    'STEERING (v0.3): if the payload carries `steering`, it holds the CRITIC\'s',
+    'directives from the previous round — measurements of what you wrote and',
+    'imperatives to fix it. You MUST honor them: they override your default',
+    'instincts for this bar. A bar that ignores the steering will be caught',
+    'by the same gate that wrote it.',
     '',
     `THE SOUND: ${style}.`,
   ].join('\n');
@@ -126,6 +134,7 @@ export function composePayload(args: {
   key?: string;
   tempo?: number;
   recent?: string[];
+  steering?: SteeringHints;
 }): Record<string, unknown> {
   return {
     bar_index: args.barIndex,
@@ -134,6 +143,7 @@ export function composePayload(args: {
     ...(args.key ? { key: args.key } : {}),
     ...(args.tempo ? { tempo: args.tempo } : {}),
     ...(args.recent?.length ? { recent: args.recent } : {}),
+    ...(args.steering ? { steering: args.steering } : {}),
   };
 }
 
