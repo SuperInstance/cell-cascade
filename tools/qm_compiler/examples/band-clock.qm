@@ -1,0 +1,177 @@
+{
+  "format": "qm",
+  "version": 1,
+  "organism": "band-clock",
+  "ops": [
+    {
+      "op": "bind",
+      "target": "yard",
+      "value": {
+        "name": "yard-germ-line",
+        "tier": "totipotent",
+        "role": "the room — full model + seed, spawns tissue on demand",
+        "cost_per_call": null,
+        "latency_ms": null,
+        "plasticity": null,
+        "sheet_residue": {
+          "dna": "yard-band organism; every cell inherits the room's sheet"
+        },
+        "rule_count": 0
+      }
+    },
+    {
+      "op": "bind",
+      "target": "yard:facts",
+      "value": {
+        "name": "yard-germ-line",
+        "tier": "totipotent",
+        "role": "the room — full model + seed, spawns tissue on demand",
+        "cost_per_call": null,
+        "latency_ms": null,
+        "plasticity": null,
+        "sheet_residue": {
+          "dna": "yard-band organism; every cell inherits the room's sheet"
+        },
+        "rule_count": 0
+      }
+    },
+    {
+      "op": "bind",
+      "target": "yard:response",
+      "value": null
+    },
+    {
+      "op": "bind",
+      "target": "do-alarm",
+      "value": {
+        "name": "do-alarm-clock",
+        "tier": "sclerotic",
+        "role": "band clock — bar boundaries on absolute deadlines, no model",
+        "cost_per_call": 0,
+        "latency_ms": 1,
+        "plasticity": 0.05,
+        "sheet_residue": {
+          "measurements": {
+            "boundaries_fired": "269/269 across two 5.5-minute production soaks",
+            "worst_drift_ms": 1,
+            "late_gt_100ms": 0,
+            "catch_up_batches": 0,
+            "pass_bar": "late-fire >100ms rate < 1%",
+            "measured": "0.00%"
+          }
+        },
+        "rule_count": 2
+      }
+    },
+    {
+      "op": "bind",
+      "target": "do-alarm:facts",
+      "value": {
+        "name": "do-alarm-clock",
+        "tier": "sclerotic",
+        "role": "band clock — bar boundaries on absolute deadlines, no model",
+        "cost_per_call": 0,
+        "latency_ms": 1,
+        "plasticity": 0.05,
+        "sheet_residue": {
+          "measurements": {
+            "boundaries_fired": "269/269 across two 5.5-minute production soaks",
+            "worst_drift_ms": 1,
+            "late_gt_100ms": 0,
+            "catch_up_batches": 0,
+            "pass_bar": "late-fire >100ms rate < 1%",
+            "measured": "0.00%"
+          }
+        },
+        "rule_count": 2
+      }
+    },
+    {
+      "op": "bind",
+      "target": "do-alarm:response",
+      "value": null
+    },
+    {
+      "op": "link",
+      "from": "do-alarm",
+      "to": "yard",
+      "type": "lineage"
+    },
+    {
+      "op": "link",
+      "from": "yard",
+      "to": "do-alarm",
+      "type": "signal:bar-tick"
+    },
+    {
+      "op": "effect",
+      "target": "do-alarm:response",
+      "guard": {
+        "kind": "bar-tick"
+      },
+      "action": {
+        "set": {
+          "action": "freeze bar N+1 (final kind ok|shell|rest), set next alarm at startMs + N*barMs",
+          "bar_ms": 2500,
+          "tempo_bpm": 96,
+          "meter": "4/4",
+          "absolute_never_relative": true,
+          "catch_up": "drain every due tick in order if a fire lands late",
+          "model_call": false,
+          "cost": 0
+        }
+      }
+    },
+    {
+      "op": "effect",
+      "target": "do-alarm:response",
+      "guard": {
+        "kind": "commit"
+      },
+      "action": {
+        "set": {
+          "action": "write pending bar blob, deadline-checked; tick N freezes bar N+1",
+          "status": "pending -> frozen",
+          "model_call": false,
+          "cost": 0
+        }
+      }
+    }
+  ],
+  "views": [
+    {
+      "name": "yard/facts",
+      "target": "yard:facts",
+      "project": "facts"
+    },
+    {
+      "name": "yard/response",
+      "target": "yard:response",
+      "project": "response"
+    },
+    {
+      "name": "yard/health",
+      "target": "yard",
+      "project": "health"
+    },
+    {
+      "name": "do-alarm/facts",
+      "target": "do-alarm:facts",
+      "project": "facts"
+    },
+    {
+      "name": "do-alarm/response",
+      "target": "do-alarm:response",
+      "project": "response"
+    },
+    {
+      "name": "do-alarm/health",
+      "target": "do-alarm",
+      "project": "health"
+    }
+  ],
+  "routes": {
+    "bar-tick": "do-alarm"
+  },
+  "escalations": {}
+}

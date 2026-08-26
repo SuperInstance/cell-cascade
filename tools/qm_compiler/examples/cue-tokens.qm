@@ -1,0 +1,224 @@
+{
+  "format": "qm",
+  "version": 1,
+  "organism": "cue-tokens",
+  "ops": [
+    {
+      "op": "bind",
+      "target": "ensign-zygote",
+      "value": {
+        "name": "ensign-germ-line",
+        "tier": "totipotent",
+        "role": "ensign — full model behind the reflexes, wound healing on call",
+        "cost_per_call": null,
+        "latency_ms": null,
+        "plasticity": null,
+        "sheet_residue": {
+          "dna": "F/V EILEEN wheelhouse ensign; venue skin radio, one wire two vocabularies"
+        },
+        "rule_count": 0
+      }
+    },
+    {
+      "op": "bind",
+      "target": "ensign-zygote:facts",
+      "value": {
+        "name": "ensign-germ-line",
+        "tier": "totipotent",
+        "role": "ensign — full model behind the reflexes, wound healing on call",
+        "cost_per_call": null,
+        "latency_ms": null,
+        "plasticity": null,
+        "sheet_residue": {
+          "dna": "F/V EILEEN wheelhouse ensign; venue skin radio, one wire two vocabularies"
+        },
+        "rule_count": 0
+      }
+    },
+    {
+      "op": "bind",
+      "target": "ensign-zygote:response",
+      "value": null
+    },
+    {
+      "op": "bind",
+      "target": "cue-ack",
+      "value": {
+        "name": "cue-ack-reflex",
+        "tier": "sclerotic",
+        "role": "prefix-law ack table — instant token, no model call",
+        "cost_per_call": 0,
+        "latency_ms": 1,
+        "plasticity": 0.05,
+        "sheet_residue": {
+          "prefix_law": "every agent→agent and agent→human message = instant prefix token (reflex tier) + async payload — the Wilco buys the model its thinking window",
+          "ack_budget": "same frame as cue fire, <50ms, zero budget cost"
+        },
+        "rule_count": 6
+      }
+    },
+    {
+      "op": "bind",
+      "target": "cue-ack:facts",
+      "value": {
+        "name": "cue-ack-reflex",
+        "tier": "sclerotic",
+        "role": "prefix-law ack table — instant token, no model call",
+        "cost_per_call": 0,
+        "latency_ms": 1,
+        "plasticity": 0.05,
+        "sheet_residue": {
+          "prefix_law": "every agent→agent and agent→human message = instant prefix token (reflex tier) + async payload — the Wilco buys the model its thinking window",
+          "ack_budget": "same frame as cue fire, <50ms, zero budget cost"
+        },
+        "rule_count": 6
+      }
+    },
+    {
+      "op": "bind",
+      "target": "cue-ack:response",
+      "value": null
+    },
+    {
+      "op": "link",
+      "from": "cue-ack",
+      "to": "ensign-zygote",
+      "type": "lineage"
+    },
+    {
+      "op": "link",
+      "from": "ensign-zygote",
+      "to": "cue-ack",
+      "type": "signal:nod"
+    },
+    {
+      "op": "link",
+      "from": "ensign-zygote",
+      "to": "cue-ack",
+      "type": "signal:trade"
+    },
+    {
+      "op": "effect",
+      "target": "cue-ack:response",
+      "guard": {
+        "kind": "nod"
+      },
+      "action": {
+        "set": {
+          "ack": "ROGER",
+          "gesture_skin": "the nod",
+          "obligation": "none — free"
+        }
+      }
+    },
+    {
+      "op": "effect",
+      "target": "cue-ack:response",
+      "guard": {
+        "kind": "grin"
+      },
+      "action": {
+        "set": {
+          "ack": "carrier click",
+          "gesture_skin": "grin",
+          "obligation": "none — free"
+        }
+      }
+    },
+    {
+      "op": "effect",
+      "target": "cue-ack:response",
+      "guard": {
+        "kind": "trade"
+      },
+      "action": {
+        "set": {
+          "ack": "WILCO",
+          "gesture_skin": "your four after mine + stick twirl",
+          "obligation": "gated on echo — repeat-back parity: {kind, at, span, sides[]} normalized and matched; mismatch → SAY AGAIN, deal never enters the ledger"
+        }
+      }
+    },
+    {
+      "op": "effect",
+      "target": "cue-ack:response",
+      "guard": {
+        "kind": "again"
+      },
+      "action": {
+        "set": {
+          "ack": "SAY AGAIN",
+          "gesture_skin": "hand cupped to ear",
+          "obligation": "none — free; perception requests a re-broadcast, never a guess"
+        }
+      }
+    },
+    {
+      "op": "effect",
+      "target": "cue-ack:response",
+      "guard": {
+        "kind": "cut",
+        "payload_equals": {
+          "priority": "break"
+        }
+      },
+      "action": {
+        "set": {
+          "ack": "CUT / BREAK-BREAK",
+          "gesture_skin": "stop hand",
+          "obligation": "clear-duty"
+        }
+      }
+    },
+    {
+      "op": "effect",
+      "target": "cue-ack:response",
+      "guard": {
+        "kind": "standby"
+      },
+      "action": {
+        "set": {
+          "ack": "STANDBY",
+          "obligation": "accepted-deferred — the model is on it; pairs with the shell at the music layer"
+        }
+      }
+    }
+  ],
+  "views": [
+    {
+      "name": "ensign-zygote/facts",
+      "target": "ensign-zygote:facts",
+      "project": "facts"
+    },
+    {
+      "name": "ensign-zygote/response",
+      "target": "ensign-zygote:response",
+      "project": "response"
+    },
+    {
+      "name": "ensign-zygote/health",
+      "target": "ensign-zygote",
+      "project": "health"
+    },
+    {
+      "name": "cue-ack/facts",
+      "target": "cue-ack:facts",
+      "project": "facts"
+    },
+    {
+      "name": "cue-ack/response",
+      "target": "cue-ack:response",
+      "project": "response"
+    },
+    {
+      "name": "cue-ack/health",
+      "target": "cue-ack",
+      "project": "health"
+    }
+  ],
+  "routes": {
+    "nod": "cue-ack",
+    "trade": "cue-ack"
+  },
+  "escalations": {}
+}

@@ -1,0 +1,8 @@
+{"tick":1,"beat":0,"mode":"table","action":"compose","latency_ms":1,"myelin":1}
+{"tick":1,"compose":0,"round":1,"changes":"Dm7","mode":"model","ok":true,"tokens":1134,"latency_ms":10816,"steered":false,"answer_head":"@piano | d3-a3 . . e4 f4 . . a4 | vel: 74"}
+{"tick":1,"critique":0,"round":1,"serve":"cheap","mode":"table","ok":true,"verdict":"revise","latency_ms":1}
+{"tick":1,"compose":0,"round":2,"changes":"Dm7","mode":"model","ok":true,"tokens":1555,"latency_ms":15111,"steered":true,"answer_head":"@piano | d3-a3-c4 . e4 f4 . g4 a4 | vel: 72"}
+{"tick":1,"critique":0,"round":2,"serve":"seam","mode":"model","ok":true,"verdict":"accept","latency_ms":15336}
+{"tick":2,"beat":1,"mode":"table","action":"wait","latency_ms":1,"myelin":2}
+{"tick":3,"beat":2,"mode":"table","action":"wait","latency_ms":1,"myelin":3}
+{"tick":4,"beat":3,"mode":"table","action":"wait","latency_ms":1,"myelin":4}

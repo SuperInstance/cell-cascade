@@ -1,0 +1,54 @@
+[
+  {
+    "from": "ensign-zygote",
+    "to": "cue-ack",
+    "kind": "nod",
+    "payload": {}
+  },
+  {
+    "from": "ensign-zygote",
+    "to": "cue-ack",
+    "kind": "grin",
+    "payload": {}
+  },
+  {
+    "from": "ensign-zygote",
+    "to": "cue-ack",
+    "kind": "trade",
+    "payload": {
+      "sides": [
+        "A",
+        "B"
+      ],
+      "span": "4"
+    }
+  },
+  {
+    "from": "ensign-zygote",
+    "to": "cue-ack",
+    "kind": "again",
+    "payload": {}
+  },
+  {
+    "from": "ensign-zygote",
+    "to": "cue-ack",
+    "kind": "cut",
+    "payload": {
+      "priority": "break"
+    }
+  },
+  {
+    "from": "ensign-zygote",
+    "to": "cue-ack",
+    "kind": "cut",
+    "payload": {
+      "priority": "routine"
+    }
+  },
+  {
+    "from": "ensign-zygote",
+    "to": "cue-ack",
+    "kind": "standby",
+    "payload": {}
+  }
+]

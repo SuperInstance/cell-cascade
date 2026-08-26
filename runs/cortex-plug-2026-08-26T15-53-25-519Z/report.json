@@ -1,0 +1,125 @@
+{
+  "organism": "cortex-plug-v03b",
+  "run": "runs/cortex-plug-2026-08-26T15-53-25-519Z",
+  "ticks": 16,
+  "every": 4,
+  "bars_written": 1,
+  "composes_served": 1,
+  "compose_errors": 3,
+  "tokens": 3397,
+  "model_ms": 31030,
+  "table_ms": 16,
+  "changes": [
+    "Dm7",
+    "G7",
+    "Cmaj7",
+    "A7b9",
+    "Fmaj7",
+    "Bbmaj7",
+    "E7b9",
+    "A7"
+  ],
+  "model": "glm-5.3",
+  "compile": "cortex-plug-v03b — what the organism wrote  --  C, 100 bpm, 4/4",
+  "gan": {
+    "rounds_configured": 2,
+    "accepted_via": {
+      "verdict": 1
+    },
+    "critique_serve": {
+      "critiques": 1,
+      "cheap": 0,
+      "seam": 1,
+      "seam_failures": 0,
+      "cheap_pct": 0,
+      "seam_pct": 100
+    },
+    "revision_rounds": 0,
+    "early_accepts": 1,
+    "analyze_failures": 0,
+    "intent": {
+      "note_density": {
+        "lo": 0.15,
+        "hi": 0.6
+      },
+      "syncopation": {
+        "lo": 0.2,
+        "hi": 1
+      },
+      "register_spread": {
+        "lo": 0.05,
+        "hi": 0.25
+      },
+      "rest_ratio": {
+        "lo": 0,
+        "hi": 0.3
+      },
+      "harmonic_tension": {
+        "lo": 0.15,
+        "hi": 0.75
+      },
+      "interval_size": {
+        "lo": 0,
+        "hi": 0.65
+      }
+    }
+  },
+  "health": {
+    "serve_modes_pct": {
+      "model": 9.5,
+      "table": 76.2,
+      "escalated": 0,
+      "model_required": 0,
+      "error": 14.3
+    },
+    "zero_cost_serve_pct": 76.2,
+    "cost_tumor": {
+      "threshold_pct": 5,
+      "totipotent_serve_pct": 4.8,
+      "window": 21,
+      "warning": false,
+      "note": "healthy: germ line served 4.8% of the last 21 signals (<= 5%)"
+    },
+    "serve_split": {
+      "window": 21,
+      "by_kind": {
+        "tick": {
+          "signals": 16,
+          "table": 16,
+          "model": 0,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 100,
+          "model_pct": 0
+        },
+        "compose": {
+          "signals": 4,
+          "table": 0,
+          "model": 1,
+          "escalated": 0,
+          "error": 3,
+          "table_pct": 0,
+          "model_pct": 25
+        },
+        "critique": {
+          "signals": 1,
+          "table": 0,
+          "model": 1,
+          "escalated": 0,
+          "error": 0,
+          "table_pct": 0,
+          "model_pct": 100
+        }
+      },
+      "worst_offender": "compose",
+      "note": "serve split by kind: tick 100% table / 0% seam · compose 0% table / 25% seam · critique 0% table / 100% seam — compose leans hardest on the seam (25%)"
+    }
+  },
+  "wiring": {
+    "spine": "clock →(tick)→ c_fc71818a [sclerotic · rule table · cost 0]",
+    "cortex": "c_fc71818a →(compose)→ c_3d2db5d0 [totipotent · model seam · glm-5.3]",
+    "ear": "c_3d2db5d0 →(critique)→ c_a1a85795 [multipotent · frozen gate cost 0 · seam glm-5.3 only on ambiguity]",
+    "loop": "compose → analyze_features → critique → steering → next compose payload (2 round cap)",
+    "hands": "driver accumulates bars → plainsong MCP compile_score → MIDI"
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "format": "qm",
+  "version": 1,
+  "organism": "unheard-duke",
+  "ops": [
+    {
+      "op": "bind",
+      "target": "glm5.3",
+      "value": {
+        "name": "glm-5.3-germ-line",
+        "tier": "totipotent",
+        "role": "germ line — full model + seed, everything still expressible",
+        "cost_per_call": null,
+        "latency_ms": null,
+        "plasticity": null,
+        "sheet_residue": {
+          "model": "GLM-5.3",
+          "substrate": "plainsong ensemble MCP",
+          "dna": "every descendant inherits the full model; the sheet is the silencing pattern"
+        },
+        "rule_count": 0
+      }
+    },
+    {
+      "op": "bind",
+      "target": "glm5.3:facts",
+      "value": {
+        "name": "glm-5.3-germ-line",
+        "tier": "totipotent",
+        "role": "germ line — full model + seed, everything still expressible",
+        "cost_per_call": null,
+        "latency_ms": null,
+        "plasticity": null,
+        "sheet_residue": {
+          "model": "GLM-5.3",
+          "substrate": "plainsong ensemble MCP",
+          "dna": "every descendant inherits the full model; the sheet is the silencing pattern"
+        },
+        "rule_count": 0
+      }
+    },
+    {
+      "op": "bind",
+      "target": "glm5.3:response",
+      "value": null
+    },
+    {
+      "op": "bind",
+      "target": "duke-pianist",
+      "value": {
+        "name": "unheard-duke-pianist",
+        "tier": "differentiated",
+        "role": "Duke-style pianist — swing 66%, an arm that changes weight",
+        "cost_per_call": null,
+        "latency_ms": null,
+        "plasticity": null,
+        "sheet_residue": {
+          "r3_verdict": {
+            "critic": "CONVERGED: Duke?",
+            "session": "duke-lab-r3 — C, 112 bpm, 4/4, swing 66%, 16 bars, @piano",
+            "velocity_std": "0.200 (R2: 0.113 — the arm finally changes weight inside bars)",
+            "dynamic_range": "0.149 (R2: 0.080)",
+            "syncopation": "0.410 (R2: 0.355)",
+            "rhythmic_complexity": "0.272 (R2: 0.210)",
+            "per_bar_velstd": "0.13–0.26 across bars; velocities 37–105 over 116 notes",
+            "swing_evidence": "intra-beat onsets 0.144–0.333 early, 0.66–0.89 laid back; nominal 66% grid observed in render",
+            "steering_dimensions": "R2: 16 channels → 15 dims, dynamics coupled |r|>0.9; R3: 16 dims, 0 dead, 0 coupled — dynamics is TWO dials now"
+          },
+          "surviving_tendencies": [
+            "Vel: rows under every bar — the arm climbs, dips, rises, falls mid-bar; never one weight",
+            "square landings die by displacement: b7 Fm7→Gb7→G7 side-slip (sync 0.69, vel 80→96→88→90), b12 Dm11→Db7 tritone-sub descent",
+            "contours rotate — ramps (1,5), swells (2,9,11), dip-rises (4,12), falls (6,13,16); a mechanical ramp would be a wound",
+            "endings exhale: b16 settles 52→48→40 into the lone C6",
+            "answers live high: register answers above C6, b5 late entry, pickups into downbeats"
+          ]
+        },
+        "rule_count": 0
+      }
+    },
+    {
+      "op": "bind",
+      "target": "duke-pianist:facts",
+      "value": {
+        "name": "unheard-duke-pianist",
+        "tier": "differentiated",
+        "role": "Duke-style pianist — swing 66%, an arm that changes weight",
+        "cost_per_call": null,
+        "latency_ms": null,
+        "plasticity": null,
+        "sheet_residue": {
+          "r3_verdict": {
+            "critic": "CONVERGED: Duke?",
+            "session": "duke-lab-r3 — C, 112 bpm, 4/4, swing 66%, 16 bars, @piano",
+            "velocity_std": "0.200 (R2: 0.113 — the arm finally changes weight inside bars)",
+            "dynamic_range": "0.149 (R2: 0.080)",
+            "syncopation": "0.410 (R2: 0.355)",
+            "rhythmic_complexity": "0.272 (R2: 0.210)",
+            "per_bar_velstd": "0.13–0.26 across bars; velocities 37–105 over 116 notes",
+            "swing_evidence": "intra-beat onsets 0.144–0.333 early, 0.66–0.89 laid back; nominal 66% grid observed in render",
+            "steering_dimensions": "R2: 16 channels → 15 dims, dynamics coupled |r|>0.9; R3: 16 dims, 0 dead, 0 coupled — dynamics is TWO dials now"
+          },
+          "surviving_tendencies": [
+            "Vel: rows under every bar — the arm climbs, dips, rises, falls mid-bar; never one weight",
+            "square landings die by displacement: b7 Fm7→Gb7→G7 side-slip (sync 0.69, vel 80→96→88→90), b12 Dm11→Db7 tritone-sub descent",
+            "contours rotate — ramps (1,5), swells (2,9,11), dip-rises (4,12), falls (6,13,16); a mechanical ramp would be a wound",
+            "endings exhale: b16 settles 52→48→40 into the lone C6",
+            "answers live high: register answers above C6, b5 late entry, pickups into downbeats"
+          ]
+        },
+        "rule_count": 0
+      }
+    },
+    {
+      "op": "bind",
+      "target": "duke-pianist:response",
+      "value": null
+    },
+    {
+      "op": "link",
+      "from": "duke-pianist",
+      "to": "glm5.3",
+      "type": "lineage"
+    },
+    {
+      "op": "link",
+      "from": "glm5.3",
+      "to": "duke-pianist",
+      "type": "signal:critique-round"
+    },
+    {
+      "op": "link",
+      "from": "duke-pianist",
+      "to": "glm5.3",
+      "type": "escalate"
+    }
+  ],
+  "views": [
+    {
+      "name": "glm5.3/facts",
+      "target": "glm5.3:facts",
+      "project": "facts"
+    },
+    {
+      "name": "glm5.3/response",
+      "target": "glm5.3:response",
+      "project": "response"
+    },
+    {
+      "name": "glm5.3/health",
+      "target": "glm5.3",
+      "project": "health"
+    },
+    {
+      "name": "duke-pianist/facts",
+      "target": "duke-pianist:facts",
+      "project": "facts"
+    },
+    {
+      "name": "duke-pianist/response",
+      "target": "duke-pianist:response",
+      "project": "response"
+    },
+    {
+      "name": "duke-pianist/health",
+      "target": "duke-pianist",
+      "project": "health"
+    }
+  ],
+  "routes": {
+    "critique-round": "duke-pianist"
+  },
+  "escalations": {
+    "duke-pianist": "glm5.3"
+  }
+}

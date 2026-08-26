@@ -1,0 +1,36 @@
+[
+  {
+    "from": "yard",
+    "to": "do-alarm",
+    "kind": "bar-tick",
+    "payload": {
+      "n": 42
+    }
+  },
+  {
+    "from": "yard",
+    "to": "do-alarm",
+    "kind": "commit",
+    "payload": {
+      "bar": 41,
+      "blob": "BAAQ"
+    }
+  },
+  {
+    "from": "yard",
+    "to": "do-alarm",
+    "kind": "commit",
+    "payload": {
+      "bar": 42,
+      "blob": "BAAQ=="
+    }
+  },
+  {
+    "from": "yard",
+    "to": "do-alarm",
+    "kind": "nonsense",
+    "payload": {
+      "x": 1
+    }
+  }
+]

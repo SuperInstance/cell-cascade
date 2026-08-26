@@ -1,0 +1,10 @@
+[
+  {
+    "from": "glm5.3",
+    "to": "duke-pianist",
+    "kind": "tendency-query",
+    "payload": {
+      "i": 0
+    }
+  }
+]
